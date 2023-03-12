@@ -1,0 +1,66 @@
+<#
+.SYNOPSIS
+    Create posts on dev.to and ops.io
+.DESCRIPTION
+    Based on content and metadata this script will create posts on dev.to and ops.io.
+#>
+
+[CmdletBinding()]
+param (
+    [Parameter(Mandatory = $true,
+        ValueFromPipeline = $true,
+        HelpMessage = 'Lowercase, alphabetic name of post')]
+    [ValidatePattern('^[a-z\-]+$')]
+    [string]$PostName
+)
+
+$ErrorActionPreference = "Stop"
+
+Import-Module ./Helpers.psm1
+Import-Module ./ForumApi.psm1
+
+# ----- INIT
+# assume that API keys have been set as environment variables
+$devtoHeaders = @{"api-key" = $env:DEVTOAPIKEY; "content-type" = "application/json" }
+$opsioHeaders = @{"api-key" = $env:OPSIOAPIKEY; "content-type" = "application/json" }
+$tagMapping = Get-Content ./tagMapping.json | ConvertFrom-Json -AsHashtable
+
+# ----- CONTENT
+$postDefinition = Get-Content $(Join-Path "." "posts" $($PostName + ".json") -Resolve) | ConvertFrom-Json
+
+$title = $postDefinition.title
+$selectedTags = "(" + $($postDefinition.tags -replace ",\s+", "|") + ")"
+
+if ($postDefinition.banner100x42) {
+    if (!(Test-Path $postDefinition.banner100x42)) {
+        Write-Host "Banner image not found: $($postDefinition.banner100x42)"
+        return
+    }
+}
+
+if ($postDefinition.content) {
+    if (!(Test-Path $postDefinition.content)) {
+        Write-Host "Content file not found: $($postDefinition.content)"
+        return
+    }
+}
+
+$postContent = Get-Content $postDefinition.content -Raw
+
+# ----- POST
+
+$tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto"
+Update-Forum  -baseUrl "https://dev.to/api/articles"`
+    -postBody $postContent `
+    -title $title `
+    -tags $tags `
+    -published $postDefinition.published `
+    -headers $devtoHeaders
+
+$tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
+Update-Forum -baseUrl "https://community.ops.io/api/articles"`
+    -postBody $postContent `
+    -title $title `
+    -tags $tags `
+    -published $postDefinition.published `
+    -headers $opsioHeaders

@@ -1,0 +1,13 @@
+{
+  "powershell": {
+    "opsio": "powershell",
+    "devto": "powershell"
+  },
+  "azure": {
+    "opsio": "azure",
+    "devto": "azure"
+  },
+  "devops": {
+    "devto": "devops"
+  }
+}
