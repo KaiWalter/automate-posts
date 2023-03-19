@@ -47,7 +47,6 @@ if ($postDefinition.content) {
 }
 
 $coverImageUrl = $GitHubBlobRoot + $postDefinition.banner100x42
-$canonicalUrl = $("ancient-it-guy-" + $PostName).ToLowerInvariant()
 
 $postContent = Get-Content $postDefinition.content -Raw
 $postContent = $postContent.Replace("../images/", $($GitHubBlobRoot + "images/"))
@@ -59,7 +58,6 @@ Update-Forum  -baseUrl "https://dev.to/api/articles"`
     -postBody $postContent `
     -title $title `
     -coverImageUrl $coverImageUrl `
-    -canonicalUrl $canonicalUrl `
     -tags $tags `
     -published $postDefinition.published `
     -headers $devtoHeaders
@@ -69,7 +67,6 @@ Update-Forum -baseUrl "https://community.ops.io/api/articles"`
     -postBody $postContent `
     -title $title `
     -coverImageUrl $coverImageUrl `
-    -canonicalUrl $canonicalUrl `
     -tags $tags `
     -published $postDefinition.published `
     -headers $opsioHeaders
