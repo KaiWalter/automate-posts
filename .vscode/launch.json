@@ -11,7 +11,7 @@
             "script": "${file}",
             "args": [
                 "-PostName",
-                "testpost"
+                "automate-vs-code-ext-profiles"
             ]
         }
     ]

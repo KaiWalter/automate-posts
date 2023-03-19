@@ -4,6 +4,8 @@ function Update-Forum {
         $headers,
         $baseUrl,
         $title,
+        $coverImageUrl,
+        $canonicalUrl,
         $tags,
         $postBody,
         $published = $false
@@ -28,6 +30,7 @@ function Update-Forum {
             "title"         = $title
             "body_markdown" = $postBody
             "published"     = $published
+            "main_image"   = $coverImageUrl
             "tags"          = $($tags -split ",")
         }
     } | ConvertTo-Json -EscapeHandling EscapeHtml
@@ -42,6 +45,7 @@ function Update-Forum {
         Write-Host "PUT" $baseUrl $statusCode
     }
     else {
+        # https://developers.forem.com/api/v0#tag/articles/operation/createArticle
         Invoke-RestMethod -Method Post -Uri $baseUrl `
             -Headers $headers `
             -Body $request `

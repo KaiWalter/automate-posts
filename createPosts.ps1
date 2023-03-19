@@ -11,7 +11,8 @@ param (
         ValueFromPipeline = $true,
         HelpMessage = 'Lowercase, alphabetic name of post')]
     [ValidatePattern('^[a-z\-]+$')]
-    [string]$PostName
+    [string]$PostName,
+    [string]$GitHubBlobRoot = "https://raw.githubusercontent.com/KaiWalter/automate-posts/main/"
 )
 
 $ErrorActionPreference = "Stop"
@@ -45,7 +46,11 @@ if ($postDefinition.content) {
     }
 }
 
+$coverImageUrl = $GitHubBlobRoot + $postDefinition.banner100x42
+$canonicalUrl = $("ancient-it-guy-" + $PostName).ToLowerInvariant()
+
 $postContent = Get-Content $postDefinition.content -Raw
+$postContent = $postContent.Replace("../images/", $($GitHubBlobRoot + "images/"))
 
 # ----- POST
 
@@ -53,6 +58,8 @@ $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto
 Update-Forum  -baseUrl "https://dev.to/api/articles"`
     -postBody $postContent `
     -title $title `
+    -coverImageUrl $coverImageUrl `
+    -canonicalUrl $canonicalUrl `
     -tags $tags `
     -published $postDefinition.published `
     -headers $devtoHeaders
@@ -61,6 +68,8 @@ $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio
 Update-Forum -baseUrl "https://community.ops.io/api/articles"`
     -postBody $postContent `
     -title $title `
+    -coverImageUrl $coverImageUrl `
+    -canonicalUrl $canonicalUrl `
     -tags $tags `
     -published $postDefinition.published `
     -headers $opsioHeaders
