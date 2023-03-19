@@ -19,11 +19,15 @@ $ErrorActionPreference = "Stop"
 
 Import-Module ./Helpers.psm1
 Import-Module ./ForumApi.psm1
+Import-Module ./HashnodeApi.psm1
 
 # ----- INIT
 # assume that API keys have been set as environment variables
 $devtoHeaders = @{"api-key" = $env:DEVTOAPIKEY; "content-type" = "application/json" }
 $opsioHeaders = @{"api-key" = $env:OPSIOAPIKEY; "content-type" = "application/json" }
+$hashnodeHeaders = @{"Authorization" = $env:HASHNODETOKEN; "content-type" = "application/json" }
+$hashnodePublicationId = $env:HASHNODEPUBLICATIONID
+$hashnodeUsername = $env:HASHNODEUSERNAME
 $tagMapping = Get-Content ./tagMapping.json | ConvertFrom-Json -AsHashtable
 
 # ----- CONTENT
@@ -70,3 +74,17 @@ Update-Forum -baseUrl "https://community.ops.io/api/articles"`
     -tags $tags `
     -published $postDefinition.published `
     -headers $opsioHeaders
+
+if ($postDefinition.published) {
+
+    $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "hashnode"
+    Update-HashNode -baseUrl "https://api.hashnode.com"`
+        -postBody $postContent `
+        -title $title `
+        -coverImageUrl $coverImageUrl `
+        -tags $tags `
+        -headers $hashnodeHeaders `
+        -hashnodePublicationId $hashnodePublicationId `
+        -hashnodeUsername $hashnodeUsername
+        
+}

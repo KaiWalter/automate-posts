@@ -1,7 +1,8 @@
 {
   "azure": {
     "opsio": "azure",
-    "devto": "azure"
+    "devto": "azure",
+    "hashnode": "azure"
   },
   "devops": {
     "devto": "devops",
@@ -9,13 +10,21 @@
   },
   "powershell": {
     "opsio": "powershell",
-    "devto": "powershell"
+    "devto": "powershell",
+    "hashnode": {
+      "_id": "56f7871ffc7154468758edb7",
+      "name": "Powershell"
+    }
   },
   "productivity": {
     "opsio": "productivity",
     "devto": "productivity"
   },
   "vscode": {
-    "devto": "vscode"
+    "devto": "vscode",
+    "hashnode": {
+      "_id": "57ea5d6ee40cc4ca39a410bf",
+      "name": "Visual Studio Code"
+    }
   }
 }
