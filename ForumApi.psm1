@@ -4,6 +4,7 @@ function Update-Forum {
         $headers,
         $baseUrl,
         $title,
+        $description,
         $coverImageUrl,
         $canonicalUrl,
         $tags,
@@ -28,15 +29,16 @@ function Update-Forum {
     $request = @{
         "article" = @{
             "title"         = $title
+            "description"   = $description
             "body_markdown" = $postBody
             "published"     = $published
-            "main_image"   = $coverImageUrl
+            "main_image"    = $coverImageUrl
             "tags"          = $($tags -split ",")
         }
     } | ConvertTo-Json -EscapeHandling EscapeHtml
     
     if ($existingArticle) {
-        Invoke-RestMethod -Method Put -Uri $($baseUrl + "/" + $existingArticle.id) `
+        $response = Invoke-RestMethod -Method Put -Uri $($baseUrl + "/" + $existingArticle.id) `
             -Headers $headers `
             -Body $request `
             -SkipHttpErrorCheck `
@@ -46,7 +48,7 @@ function Update-Forum {
     }
     else {
         # https://developers.forem.com/api/v0#tag/articles/operation/createArticle
-        Invoke-RestMethod -Method Post -Uri $baseUrl `
+        $response = Invoke-RestMethod -Method Post -Uri $baseUrl `
             -Headers $headers `
             -Body $request `
             -SkipHttpErrorCheck `
@@ -55,4 +57,5 @@ function Update-Forum {
         Write-Host "POST" $baseUrl $statusCode
     }
 
+    return $response
 }

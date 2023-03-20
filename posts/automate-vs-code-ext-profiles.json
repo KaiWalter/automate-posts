@@ -1,5 +1,6 @@
 {
     "title": "Automate VS Code extensions setup across profiles",
+    "description": "An utility that helps me setup extensions tailored to my various editing profiles.",
     "tags": "vscode, productivity, powershell",
     "published": true,
     "content": "posts/automate-vs-code-ext-profiles.md",

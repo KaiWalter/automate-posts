@@ -10,7 +10,7 @@ I now work with Visual Studio Code for several years in many different workloads
 
 With that I collected a number of extensions in Visual Studio Code - before writing this article : 53 - which makes startup of VS Code slow, especially when I already have a lot of going on on my machine and much more so with the machine behind the corporate let-inspect-just-everything proxy.
 
-When learning about [VS Code profiles](https://code.visualstudio.com/docs/editor/profiles) I thought that I could create a utility that helps me setup extensions tailored to my various editing workloads.
+When learning about [VS Code profiles](https://code.visualstudio.com/docs/editor/profiles) I thought that I could create an utility that helps me setup extensions tailored to my various editing workloads.
 
 ## Prerequisites
 

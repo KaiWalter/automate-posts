@@ -6,6 +6,7 @@ function Update-HashNode {
     $headers,
     $baseUrl,
     $title,
+    $subtitle,
     $coverImageUrl,
     $canonicalUrl,
     $tags,
@@ -46,6 +47,7 @@ function Update-HashNode {
       variables = @{
         input  = @{
           title               = $title
+          subtitle            = $subtitle
           contentMarkdown     = $postBody
           coverImageURL       = $coverImageUrl
           tags                = $($tags | ConvertFrom-Json)
@@ -66,6 +68,7 @@ function Update-HashNode {
       variables = @{
         input = @{
           title               = $title
+          subtitle            = $subtitle
           contentMarkdown     = $postBody
           tags                = $($tags | ConvertFrom-Json)
           isPartOfPublication = @{

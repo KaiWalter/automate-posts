@@ -58,7 +58,7 @@ $postContent = $postContent.Replace("../images/", $($GitHubBlobRoot + "images/")
 # ----- POST
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto"
-Update-Forum  -baseUrl "https://dev.to/api/articles"`
+$devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
     -postBody $postContent `
     -title $title `
     -coverImageUrl $coverImageUrl `
@@ -67,7 +67,7 @@ Update-Forum  -baseUrl "https://dev.to/api/articles"`
     -headers $devtoHeaders
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
-Update-Forum -baseUrl "https://community.ops.io/api/articles"`
+$opsioResponse = Update-Forum -baseUrl "https://community.ops.io/api/articles"`
     -postBody $postContent `
     -title $title `
     -coverImageUrl $coverImageUrl `
@@ -81,6 +81,7 @@ if ($postDefinition.published) {
     Update-HashNode -baseUrl "https://api.hashnode.com"`
         -postBody $postContent `
         -title $title `
+        -subtitle $description `
         -coverImageUrl $coverImageUrl `
         -tags $tags `
         -headers $hashnodeHeaders `
