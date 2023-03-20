@@ -65,4 +65,4 @@ if ($Install) {
 
 ## Note on Settings Sync
 
-As I have [settings sync](https://code.visualstudio.com/docs/editor/settings-sync) activated on all my VS Code instances, above setup was synchronized from my Windows box configuration, where I orignally ran the script, to my other Windows and Linux boxes and VMs.
+As I have [settings sync](https://code.visualstudio.com/docs/editor/settings-sync) activated on all my VS Code instances, above setup was synchronized from my Windows box configuration, where I originally ran the script, to my other Windows and Linux boxes and VMs.
