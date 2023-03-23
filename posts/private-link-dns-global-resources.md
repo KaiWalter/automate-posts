@@ -459,7 +459,6 @@ Same goes for the 2nd global resource.
          Update-PrivateLink -locationCode $instanceLocationCode `
             -resourceName $acrName -resourceId $acr.Id `
             -groupId "registry"
-         }
       }
    }
 ```
@@ -477,3 +476,9 @@ Let me know whether this makes sense to you and whether it helped you out in you
 ## credits
 
 Thanks to [my good buddy Matthias](https://dev.to/matttrakker) for reviewing.
+
+----
+
+## March 2023 addendum - Blob Triggers in container hosted Azure Functions
+
+Having this environment in place for a while we experienced a strange issue:**Azure Functions** hosted inside containers in above environment, which access storage account over private link, did **not get triggered by blob triggers**. Another esteemed team mate of mine - Fabian - figured out that in such a case a private link to only the blob endpoint is not sufficient but also a private link+DNS to the blob queue endpoint is required [see here](https://github.com/fabistb/azure-function-blob-trigger-private-endpoint).
