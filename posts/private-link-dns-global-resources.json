@@ -1,0 +1,8 @@
+{
+    "title": "Using Azure private links and private DNS zones with globally distributed resources",
+    "description": "Bringing up and connecting single Azure resources with private link is easy. Covering a set of resources with varying scopes of network accessibility and mastering DNS name resolution properly is a different beast.",
+    "tags": "azure, networking, privatelink",
+    "published": true,
+    "content": "posts/private-link-dns-global-resources.md",
+    "banner100x42": "images/lake-wash-2017-100x42.png"
+}

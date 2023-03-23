@@ -2,11 +2,25 @@
   "azure": {
     "opsio": "azure",
     "devto": "azure",
-    "hashnode": "azure"
+    "hashnode": {
+      "_id": "56744721958ef13879b94d89",
+      "name": "Azure"
+    }
   },
   "devops": {
     "devto": "devops",
     "opsio": "devops"
+  },
+  "networking": {
+    "devto": "networking",
+    "opsio": "networking",
+    "hashnode": {
+      "_id": "56ffbb5d5861692778050361",
+      "name": "networking"
+    }
+  },
+  "privatelink": {
+    "devto": "privatelink"
   },
   "powershell": {
     "opsio": "powershell",
