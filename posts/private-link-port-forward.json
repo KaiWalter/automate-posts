@@ -1,0 +1,8 @@
+{
+    "title": "Private linking Azure resources with port forwarding",
+    "description": "How to forward a TCP port over Azure Load Balancer and Private Link to remote IP addresses.",
+    "tags": "azure, networking, privatelink",
+    "published": false,
+    "content": "posts/private-link-port-forward.md",
+    "banner100x42": "images/lake-wash-2017-100x42.png"
+}
