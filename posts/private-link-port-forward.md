@@ -2,7 +2,7 @@
 
 What can be seen in this post:
 
-- use a Load Balancer combined with a small sized VM scaleset (VMSS) equiped with **iptables** to forward incoming connections to 2 IP addresses which represent 2 on-premise servers; this installation is placed in a hub network that can be shared amount several spokes
+- use a Load Balancer combined with a small sized VM scaleset (VMSS) configured with **iptables** to forward and masquerade incoming connections to 2 IP addresses which represent 2 on-premise servers; this installation is placed in a hub network that can be shared amount several spokes
 - link this Load Balancer to another virtual network - without virtual network peering - by utilizing Private Link Service and a Private Endpoint which is placed in a spoke network
 - use Azure Container Instances to connect into hub or spoke networks and test connections
 
@@ -77,10 +77,11 @@ Anyway Azure Portal did not allow to create a Private Link Service on a Load Bal
 - **Virtual Network Peering** Hub and Spoke is not an option as we
   - do not want to mix up corporate IP address ranges with the arbitrary IP addresses ranges of the various Container Apps virtual networks
   - want to avoid BGP/Border Gateway Protocol mishaps at any cost
-- with a recently [**reduced required subnet size** for Workload profiles](https://learn.microsoft.com/en-us/azure/container-apps/networking#subnet) moving **Azure Container Apps environment** back to corporate IP address space would have been possible, but I did not want to give up this extra level of isolation this separation based on Private Link in and out gave us
+- with a recently [**reduced required subnet size** for Workload profiles](https://learn.microsoft.com/en-us/azure/container-apps/networking#subnet) moving the whole **Azure Container Apps environment** or just the particular single Container App in question back to corporate IP address space would have been possible, but I did not want to give up this extra level of isolation this separation based on Private Link in and out gave us; additionally it would have required a new / separate subnet to keep it within network boundaries
+- deploy this one containerized workload into the corporate VNET with **Azure App Service or Azure Functions**, but that would have messed up the homogeneity of our environment; additionally it would have required a new / separate subnet allowing delegation for these resources
 
 ## Bring In some IaaS and **iptables** magic
 
-
+I am **PaaS-first** guy. I do not want (or let other people need) to deal with infrastructure / **IaaS**. So for this rare occasion and isolated use case I decided to go for it and keep and eye out for a future Azure resource or feature that might cover this scenario - as with our DNS forwarded scaleset which we now can replace with [Azure DNS Private Resolver](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview). For our team such a decision in the end is a matter of managing technical debt.
 
 ![Network diagram showing connection from Private Endpoint over Private Link Service, Load Balancer to on premise Servers](../images/private-link-port-forward.png)
