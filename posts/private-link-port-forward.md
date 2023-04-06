@@ -80,6 +80,8 @@ az network lb show -g $RESOURCE_GROUP_NAME --name ilb-$RESOURCE_TOKEN
 - with a recently [**reduced required subnet size** for Workload profiles](https://learn.microsoft.com/en-us/azure/container-apps/networking#subnet) moving the whole **Azure Container Apps environment** or just the particular single Container App in question back to corporate IP address space would have been possible, but I did not want to give up this extra level of isolation this separation based on Private Link in and out gave us; additionally it would have required a new / separate subnet to keep it within network boundaries
 - deploy this one containerized workload into the corporate VNET with **Azure App Service or Azure Functions**, but that would have messed up the homogeneity of our environment; additionally it would have required a new / separate subnet allowing delegation for these resources
 
+----
+
 ## Bring In some IaaS and **iptables** Magic
 
 Being a passionate **PaaS-first** guy, I usually do not want (or let other people need) to deal with infrastructure / **IaaS**. So for this rare occasion and isolated use case I decided to go for it and keep and eye out for a future Azure resource or feature that might cover this scenario - as with our DNS forwarded scaleset which we now can replace with [Azure DNS Private Resolver](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview). For our team such a decision in the end is a matter of managing technical debt.
@@ -368,3 +370,11 @@ source <(azd env get-values | grep NAME)
 az container start -n $SPOKE_JUMP_NAME -g $RESOURCE_GROUP_NAME
 az container exec -n $SPOKE_JUMP_NAME -g $RESOURCE_GROUP_NAME --exec-command "curl http://onprem-server.internal.net:8000"
 ```
+
+----
+
+## Final Words
+
+As stated I am not a huge fan of bringing in IaaS components into our cloud infrastructures. Just one more spinning piece one has to keep an eye on. Particularly for smaller team sizes have too many IaaS elements does not scale and shifts a substantial portion of the focus on operations instead of delivering business value - features.
+
+However, after careful consideration of all options, it sometimes makes sense to bring in such a small piece to avoid to reworking your whole infrastructure or deviate from fundamental design goals.
