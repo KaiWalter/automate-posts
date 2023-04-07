@@ -5,6 +5,9 @@ What can be seen in this post:
 - use a Load Balancer combined with a small sized VM scaleset (VMSS) configured with **iptables** to forward and masquerade incoming connections to 2 IP addresses which represent 2 on-premise servers; this installation is placed in a hub network that can be shared amount several spoke networks
 - link this Load Balancer to another virtual network - without virtual network peering - by utilizing Private Link Service and a Private Endpoint which is placed in a spoke network
 - use Azure Container Instances to connect into hub or spoke networks and test connections
+- how to feed `cloud-init.txt` for VM **customData** into **azd** parameters
+- how to stop Azure Container Instances immediately after **azd** / **Bicep** deployment with the post-provisioning hook
+- how to persistent **iptables** between reboots on the VMSS instance without an additional package
 
 ## Context
 
@@ -104,20 +107,18 @@ All solution elements can be found in this [repo](https://github.com/KaiWalter/a
 
 ### VM Scaleset
 
-I chose an image which is supported for `enableAutomaticOSUpgrade: true` to reduce some of the maintenance effort; Ubuntu 22.10 was not yet supported
+I chose an image with a small footprint and which is supported for `enableAutomaticOSUpgrade: true` to reduce some of the maintenance effort:
 
 ```
   imageReference: {
-    publisher: 'canonical'
-    offer: '0001-com-ubuntu-server-jammy'
-    sku: '22_04-LTS'
+    publisher: 'MicrosoftCBLMariner'
+    offer: 'cbl-mariner'
+    sku: 'cbl-mariner-2-gen2'
     version: 'latest'
   }
 ```
 
-> I want to try to convert to CBL Mariner to reduce image size sometime soon and update here
-
-I chose the smallest feasible  VM SKU, but asked or monitoring team to keep an I on CPU+Disk+Memory utilization
+I chose a small but feasible VM SKU:
 
 ```
   sku: {
@@ -171,9 +172,6 @@ write_files:
     net.ipv4.conf.all.route_localnet=1
   append: true
 ...
-runcmd:
-- sysctl -p
-...
 ```
 
 I added a basic distribution of load to the 2 on-premise servers based on the last digit of the VMSS node's hostname:
@@ -188,29 +186,34 @@ To dig into some of the basics of **iptables** I worked through these 2 posts:
 - <https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands>
 - <https://jensd.be/343/linux/forward-a-tcp-port-to-another-ip-or-port-using-nat-with-iptables>
 
+and got the idea of a simplistic persistence of **iptables** accross reboots
+- <https://dev.to/oryaacov/3-ways-to-make-iptables-persistent-4pp>
+
 ```
 # clear filter table
 iptables --flush
 # general policy : deny all incoming traffic
-iptables -P INPUT DROP
-# general policy : but allow all outgoing traffic
-iptables -P OUTPUT ACCEPT
-# allow traffic coming in on loopback adapter -- see -A OUTPUT -p tcp -d 127.0.0.1
-iptables -A INPUT -i lo -j ACCEPT
+iptables ${IPTABLES_WAIT} -P INPUT DROP
+# general policy : allow all outgoing traffic
+iptables ${IPTABLES_WAIT} -P OUTPUT ACCEPT
+# general policy : allow FORWARD traffic
+iptables ${IPTABLES_WAIT} -A FORWARD -j ACCEPT
 # further allow established connection
-iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables ${IPTABLES_WAIT} -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 # drop invalid connections
-iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+iptables ${IPTABLES_WAIT} -A INPUT -m conntrack --ctstate INVALID -j DROP
 # allow incoming SSH for testing - could be removed
-iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-# allow outgoing connection to target servers from inside VMSS node
-iptables -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport $PORT -j DNAT --to-destination $ONPREMSERVER
+iptables ${IPTABLES_WAIT} -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+# clear nat table
+iptables --flush -t nat
+# allow outgoing connection to target servers from inside VMSS node - is required for ApplicationHealthLinux
+iptables ${IPTABLES_WAIT} -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport $PORT -j DNAT --to-destination $ONPREMSERVER
 # allow incoming traffic from Load Balancer! - important!
-iptables -t nat -A PREROUTING -s 168.63.129.16/32 -p tcp -m tcp --dport $PORT -j DNAT --to-destination $ONPREMSERVER:$PORT
+iptables ${IPTABLES_WAIT} -t nat -A PREROUTING -s 168.63.129.16/32 -p tcp -m tcp --dport $PORT -j DNAT --to-destination $ONPREMSERVER:$PORT
 # allow incoming traffic from Hub virtual network - mostly for testing/debugging, could be removed
-iptables -t nat -A PREROUTING -s $INBOUNDNET -p tcp -m tcp --dport $PORT -j DNAT --to-destination $ONPREMSERVER:$PORT
+iptables ${IPTABLES_WAIT} -t nat -A PREROUTING -s $INBOUNDNET -p tcp -m tcp --dport $PORT -j DNAT --to-destination $ONPREMSERVER:$PORT
 # masquerade outgoing traffic so that target servers assume traffic originates from "allowed" server in Hub network
-iptables -t nat -A POSTROUTING -d $ONPREMNET -j MASQUERADE
+iptables ${IPTABLES_WAIT} -t nat -A POSTROUTING -d $ONPREMSERVER -j MASQUERADE
 ```
 
 > I learned that I also could have used **nftables** or **ufw**, I just found the most suitable samples with **iptables**
@@ -229,7 +232,7 @@ I got confused when I started using private linking a few months back: This serv
 
 Also pretty straight forward: I chose a zone `internal.net` which is unique in the environment and potentially not appearing somewhere else.
 
-`forwarder-private-nic-to-ip.bicep` : this allows to resolve the private endpoints's private address with an extra deployment step over the NIC:
+`forwarder-private-nic-to-ip.bicep` : Within the same Bicep file, after the deployment of the private endpoint, its private IP address is not available. This script allows to resolve the private endpoints's private address with an extra deployment step from the NIC:
 
 ```
 param pepNicId string
@@ -272,7 +275,7 @@ I use a publicly available image `hacklab/docker-nettools` which contains some e
 In the containerGroup resource I overwrite the startup command to send this shell-like container into a loop so that it can be re-used for a shell like `az container exec -n $HUB_JUMP_NAME -g $RESOURCE_GROUP_NAME --exec-command "/bin/bash"` later.
 
 ```
-  command: [
+****  command: [
     'tail'
     '-f'
     '/dev/null'
@@ -281,7 +284,7 @@ In the containerGroup resource I overwrite the startup command to send this shel
 
 ### Other Gadgets
 
-I use **azd** hooks to funnel e.g. `cloud-init.txt` or SSH public key `id_rsa` content into deployment variables - see `hooks/preprovision.sh`
+I use **azd** hooks to funnel e.g. `cloud-init.txt` or SSH public key `id_rsa` content into deployment variables - see `scripts/set-environment.sh`
 
 ```shell
 #!/bin/bash
@@ -293,9 +296,11 @@ azd env set CLOUD_INIT_ONPREM "$(cat ./infra/modules/onprem-server/cloud-init.tx
 azd env set CLOUD_INIT_FWD "$(cat ./infra/modules/forwarder/cloud-init.txt | base64 -w 0)"
 ```
 
-> converting to base 64 avoids having to deal with line breaks or other control characters in the variables
+> a. converting to base 64 avoids having to deal with line breaks or other control characters in the variables
+> 
+> b. I had the feeling that changes to one of the `cloud-init.txt` files only got picked up by `azd up` but not with `azd infra create`; I'll observe further and create an issue with <https://github.com/Azure/azure-dev/issues> in case I can reproduce it; this lagging update of `cloud-init.txt` on the scaleset let me to figur out [how to check, which content of cloud-init.txt was used during deployment or reimaging](https://stackoverflow.com/questions/75956905/who-can-i-check-if-the-correct-version-of-cloud-init-txt-was-used-on-my-linux-az/75956906#75956906)
 
-After the deployment I immediately stop Azure Container Instances to not induce cost permanently - see `hooks/postprovision.sh` ...
+After the deployment I immediately stop Azure Container Instances to not induce cost permanently - with `hooks/post-provision.sh` ...
 
 ```shell
 #!/bin/bash
@@ -335,6 +340,7 @@ Login to your subscription first with Azure CLI and Azure Developer CLI:
 az login
 azd login
 azd init
+scripts/set-environment.sh
 ```
 
 > be sure to set Azure CLI subscription to same subscription with `az account set -s ...` as specified for `azd init`
@@ -359,8 +365,8 @@ Check, that connection to sample servers is working from over Load Balancer with
 ```shell
 source <(azd env get-values | grep -E 'NAME|TOKEN')
 az container start -n $HUB_JUMP_NAME -g $RESOURCE_GROUP_NAME
-ILB_IP=`az network lb list -g $RESOURCE_GROUP_NAME --query "[?contains(name, '$RESOURCE_TOKEN')].frontendIPConfigurations[].privateIPAddress" -o tsv`
-az container exec -n $HUB_JUMP_NAME -g $RESOURCE_GROUP_NAME --exec-command "wget http://$ILB_IP:8000 -O -"
+ILBIP=`az network lb list -g $RESOURCE_GROUP_NAME --query "[?contains(name, '$RESOURCE_TOKEN')].frontendIPConfigurations[].privateIPAddress" -o tsv`
+az container exec -n $HUB_JUMP_NAME -g $RESOURCE_GROUP_NAME --exec-command "wget http://$ILBIP:8000 -O -"
 ```
 
 Check, that connection to sample servers is working from Spoke network
