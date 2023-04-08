@@ -198,6 +198,8 @@ iptables ${IPTABLES_WAIT} -P INPUT DROP
 iptables ${IPTABLES_WAIT} -P OUTPUT ACCEPT
 # general policy : allow FORWARD traffic
 iptables ${IPTABLES_WAIT} -A FORWARD -j ACCEPT
+# allow input on loopback - is required e.g. for upstream Azure DNS resolution
+iptables ${IPTABLES_WAIT} -I INPUT -i lo -j ACCEPT
 # further allow established connection
 iptables ${IPTABLES_WAIT} -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 # drop invalid connections
@@ -284,7 +286,7 @@ In the containerGroup resource I overwrite the startup command to send this shel
 
 ### Other Gadgets
 
-I use **azd** hooks to funnel e.g. `cloud-init.txt` or SSH public key `id_rsa` content into deployment variables - see `scripts/set-environment.sh`
+I use **azd env set** to funnel e.g. `cloud-init.txt` or SSH public key `id_rsa` content into deployment variables - see `scripts/set-environment.sh`
 
 ```shell
 #!/bin/bash
@@ -298,9 +300,9 @@ azd env set CLOUD_INIT_FWD "$(cat ./infra/modules/forwarder/cloud-init.txt | bas
 
 > a. converting to base 64 avoids having to deal with line breaks or other control characters in the variables
 > 
-> b. I had the feeling that changes to one of the `cloud-init.txt` files only got picked up by `azd up` but not with `azd infra create`; I'll observe further and create an issue with <https://github.com/Azure/azure-dev/issues> in case I can reproduce it; this lagging update of `cloud-init.txt` on the scaleset let me to figur out [how to check, which content of cloud-init.txt was used during deployment or reimaging](https://stackoverflow.com/questions/75956905/who-can-i-check-if-the-correct-version-of-cloud-init-txt-was-used-on-my-linux-az/75956906#75956906)
+> b. I started having `scripts/set-environment.sh` as a `preifnracreate` or `preup` hook but experienced that changes made in such a hook script to e.g. `cloud-init.txt` were not picked up consistently. Values seemed to be cached somewhere. This lagging update of `cloud-init.txt` on the scaleset let me to figure out [how to check, which content of cloud-init.txt was used during deployment or reimaging](https://stackoverflow.com/questions/75956905/who-can-i-check-if-the-correct-version-of-cloud-init-txt-was-used-on-my-linux-az/75956906#75956906).
 
-After the deployment I immediately stop Azure Container Instances to not induce cost permanently - with `hooks/post-provision.sh` ...
+After the deployment I immediately stop Azure Container Instances to not induce cost permanently - using the post provisioning hook `hooks/post-provision.sh` ...
 
 ```shell
 #!/bin/bash
