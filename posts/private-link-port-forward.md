@@ -8,6 +8,7 @@ What can be seen in this post:
 - how to feed `cloud-init.txt` for VM **customData** into **azd** parameters
 - how to stop Azure Container Instances immediately after **azd** / **Bicep** deployment with the post-provisioning hook
 - how to persistent **iptables** between reboots on the VMSS instance without an additional package
+- how to use a **NAT gateway** to allow outbound traffic for an **ILB/Internal Load Balancer**
 
 ## Context
 
@@ -101,6 +102,7 @@ All solution elements can be found in this [repo](https://github.com/KaiWalter/a
 - `infra/modules/forwarder/forwarder.bicep` : a **Load Balancer** on top of the VMSS
 - `infra/modules/forwarder/forwarder-spoke-privatelink.bicep` : a **Private Link Service** linked to the Load Balancer
 - `infra/modules/forwarder/forwarder-spoke-privatelink.bicep` : a **Private Endpoint** in the Spoke network connecting to the Private Link Server paired with a Private DNS zone to allow for name resolution
+- `infra/modules/network.bicep` : a **NAT gateway** on the Hub virtual network for the **Internal Load Balancer**
 - `infra/modules/containergroup.bicep` : Azure Container Instances (**ACI**) in Hub and Spoke virtual networks to hop onto these network for basic testing
 
 > general note: the sample repo is forwarding to web servers on port 8000 - for that I could have used (a layer 7) Application Gateway; however in our real world scenario we forward to another TCP/non-HTTP port, so the solution you see here should work for any TCP port (on layer 4)
@@ -268,6 +270,72 @@ resource privateDnsZoneEntry 'Microsoft.Network/privateDnsZones/A@2020-06-01' = 
     ttl: 3600
   }
 }
+```
+
+### NAT gateway
+
+[NAT gateway](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-overview) can be used to scale out outbound IP traffic with a range of public IP addresses to have a defined to avoid SNAT port exhaustion. In this scenario it is required to allow outbound IP traffic for the ILB/Internal Load Balancer - so for package manager updates during VMSS instance provisioning and for applying updates while running. It is defined in `infra/modules/network.bicep` ...
+
+```
+resource publicip 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
+  name: 'nat-pip-${resourceToken}'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    idleTimeoutInMinutes: 4
+  }
+}
+
+resource natgw 'Microsoft.Network/natGateways@2022-09-01' = {
+  name: 'nat-gw-${resourceToken}'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    idleTimeoutInMinutes: 4
+    publicIpAddresses: [
+      {
+        id: publicip.id
+      }
+    ]
+  }
+}
+```
+
+... and then linked to Hub virtual network, shared subnet where the Internal Load Balancer is placed into:
+
+```
+// hub virtual network where the shared resources are deployed
+resource vnetHub 'Microsoft.Network/virtualNetworks@2022-09-01' = {
+  name: 'vnet-hub-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.1.0/24'
+      ]
+    }
+    subnets: [
+      {
+        name: 'shared'
+        properties: {
+          addressPrefix: '10.0.1.0/26'
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
+          natGateway: {
+            id: natgw.id
+          }
+        }
+      }
+...
 ```
 
 ### Azure Container Instances
