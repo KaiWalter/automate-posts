@@ -1,0 +1,8 @@
+{
+    "title": "Private linking an Azure Container App Environment (May'23 update)",
+    "description": "Bringing up and connecting single Azure resources with private link is easy. Covering a set of resources with varying scopes of network accessibility and mastering DNS name resolution properly is a different beast.",
+    "tags": "azure, networking, privatelink",
+    "published": true,
+    "content": "posts/private-link-azure-container-apps.md",
+    "banner100x42": "images/garden-1-100x42.jpg"
+}
