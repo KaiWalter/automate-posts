@@ -32,7 +32,7 @@ $hashnodeUsername = $env:HASHNODEUSERNAME
 $tagMapping = Get-Content ./tagMapping.json | ConvertFrom-Json -AsHashtable
 
 # ----- CONTENT
-$postDefinition = Get-Content $(Join-Path "." "posts" $($PostName + ".json") -Resolve) | ConvertFrom-Json
+$postDefinition = Get-Content $(Join-Path "." "posts" $($PostName + ".json") -Resolve) | ConvertFrom-Json -Depth 10 -AsHashtable
 
 $title = $postDefinition.title
 $selectedTags = "(" + $($postDefinition.tags -replace ",\s+", "|") + ")"
@@ -56,11 +56,16 @@ $coverImageUrl = $GitHubBlobRoot + $postDefinition.banner100x42
 $postContent = Get-Content $postDefinition.content -Raw
 $postContent = $postContent.Replace("../images/", $($GitHubBlobRoot + "images/"))
 
+# ----- platform dependent replacements
+$postDevToContent = Get-PlatformReplacements -postBody $postContent -replacements $postDefinition.replacements -forum "devto"
+$postOpsIoContent = Get-PlatformReplacements -postBody $postContent -replacements $postDefinition.replacements -forum "opsio"
+$postHashnodeContent = Get-PlatformReplacements -postBody $postContent -replacements $postDefinition.replacements -forum "hashnode"
+
 # ----- POST
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto"
 $devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
-    -postBody $postContent `
+    -postBody $postDevToContent `
     -title $title `
     -coverImageUrl $coverImageUrl `
     -tags $tags `
@@ -69,7 +74,7 @@ $devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
 $opsioResponse = Update-Forum -baseUrl "https://community.ops.io/api/articles"`
-    -postBody $postContent `
+    -postBody $postOpsIoContent `
     -title $title `
     -coverImageUrl $coverImageUrl `
     -tags $tags `
@@ -80,7 +85,7 @@ if ($postDefinition.published) {
 
     $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "hashnode"
     Update-HashNode -baseUrl "https://api.hashnode.com"`
-        -postBody $postContent `
+        -postBody $postHashnodeContent `
         -title $title `
         -subtitle $description `
         -coverImageUrl $coverImageUrl `

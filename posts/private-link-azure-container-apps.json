@@ -1,8 +1,26 @@
 {
     "title": "Private linking an Azure Container App Environment (May'23 update)",
-    "description": "Bringing up and connecting single Azure resources with private link is easy. Covering a set of resources with varying scopes of network accessibility and mastering DNS name resolution properly is a different beast.",
+    "description": "How to overcome IP address range restrictions and complete isolate an Azure Container Apps Environment.",
     "tags": "azure, networking, privatelink",
     "published": true,
     "content": "posts/private-link-azure-container-apps.md",
-    "banner100x42": "images/garden-1-100x42.jpg"
+    "banner100x42": "images/garden-1-100x42.jpg",
+    "replacements": {
+      "opsio": [
+        {
+          "search": "https://dev.to/kaiwalter/private-linking-and-port-forwarding-to-non-azure-resources-5h0f",
+          "replace":"https://community.ops.io/kaiwalter/private-linking-and-port-forwarding-to-non-azure-resources-3ea5"
+        }
+      ],
+      "hashnode": [
+        {
+          "search": "https://dev.to/kaiwalter/preliminary-private-linking-an-azure-container-app-environment-3cnf",
+          "replace":"https://ancientitguy.hashnode.dev/private-linking-an-azure-container-app-environment"
+        },
+        {
+          "search": "https://dev.to/kaiwalter/private-linking-and-port-forwarding-to-non-azure-resources-5h0f",
+          "replace":"https://ancientitguy.hashnode.dev/private-linking-and-port-forwarding-to-non-azure-resources"
+        }
+      ]
+    }
 }

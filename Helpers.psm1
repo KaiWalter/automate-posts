@@ -29,3 +29,20 @@ function Get-TagMapping {
         } | Join-String -Separator ","
     }
 }
+
+function Get-PlatformReplacements {
+    [CmdletBinding()]
+    param (
+        $postBody,
+        $replacements,
+        $forum
+    )
+
+    if ($replacements[$forum]) {
+        foreach ($sr in $replacements[$forum]) {
+            $postBody = $postBody.Replace($sr.search, $sr.replace)
+        }
+    }
+
+    return $postBody
+}
