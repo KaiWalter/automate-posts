@@ -11,7 +11,7 @@
             "script": "${file}",
             "args": [
                 "-PostName",
-                "automate-vs-code-ext-profiles"
+                "link-dotfiles-windows-nvim"
             ]
         }
     ]

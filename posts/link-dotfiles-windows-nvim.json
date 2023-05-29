@@ -1,0 +1,9 @@
+{
+    "title": "Share NeoVim configuration between Linux and Windows",
+    "description": "Use a Dotfiles repository in Windows to synchronize NeoVim configuration with Linux.",
+    "tags": "neovim, productivity, powershell",
+    "published": true,
+    "content": "posts/link-dotfiles-windows-nvim.md",
+    "banner100x42": "images/rosenstein-2023-100x42.png",
+    "replacements": {}
+}

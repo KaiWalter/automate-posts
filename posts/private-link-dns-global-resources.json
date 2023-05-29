@@ -4,5 +4,6 @@
     "tags": "azure, networking, privatelink",
     "published": true,
     "content": "posts/private-link-dns-global-resources.md",
-    "banner100x42": "images/lake-wash-2017-100x42.png"
+    "banner100x42": "images/lake-wash-2017-100x42.png",
+    "replacements": {}
 }

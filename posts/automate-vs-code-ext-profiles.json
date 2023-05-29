@@ -4,5 +4,6 @@
     "tags": "vscode, productivity, powershell",
     "published": true,
     "content": "posts/automate-vs-code-ext-profiles.md",
-    "banner100x42": "images/vscode-profiles-100x42.png"
+    "banner100x42": "images/vscode-profiles-100x42.png",
+    "replacements": {}
 }

@@ -4,5 +4,6 @@
     "tags": "azure, networking, privatelink",
     "published": true,
     "content": "posts/private-link-port-forward.md",
-    "banner100x42": "images/rodstein-100x42.jpg"
+    "banner100x42": "images/rodstein-100x42.jpg",
+    "replacements": {}
 }

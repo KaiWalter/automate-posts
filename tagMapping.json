@@ -30,6 +30,9 @@
       "name": "Powershell"
     }
   },
+  "neovim": {
+    "devto": "neovim"
+  },
   "productivity": {
     "opsio": "productivity",
     "devto": "productivity"
