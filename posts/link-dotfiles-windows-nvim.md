@@ -41,6 +41,8 @@ if (!(Test-Path $localPacker -PathType Container)) {
 
 > ATTENTION: `git@github.com:KaiWalter/dotfiles.git` is my private Dotfiles repo - if you want to replicate my approach you would need to run from your own version
 
+After running the script and starting NeoVim a `:PackerSync` is required to install all the plugins.
+
 ## My Dotfiles on Linux
 
 There are plenty of posts with various flavors on how to go about setting up Dotfiles. I could not get myself to suggest a particular one, so... when I setup a new Linux system, I use these commands to clone it locally:
