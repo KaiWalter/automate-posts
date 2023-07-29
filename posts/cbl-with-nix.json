@@ -1,0 +1,16 @@
+{
+    "title": "Azure VM based on CBL-Mariner with Nix package manager",
+    "description": "How to enable a vast ecosystem of packages to a CBL-Mariner based VM.",
+    "tags": "azure, productivity",
+    "published": true,
+    "content": "posts/cbl-with-nix.md",
+    "banner100x42": "images/breitach-2023-100x42.png",
+    "replacements": {
+      "opsio": [
+        {
+          "search": "https://dev.to/kaiwalter/create-a-disposable-azure-vm-based-on-cbl-mariner-2013",
+          "replace":"https://community.ops.io/kaiwalter/create-a-disposable-azure-vm-based-on-cbl-mariner-2ic6"
+        }
+      ]
+    }
+}
