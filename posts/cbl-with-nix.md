@@ -92,7 +92,7 @@ Gotchas:
 - daemon installation of Nix package manager needs to be executed in the context of the VM main user
 - after daemon installation `nix-env` and all installed binaries reside in `/nix/var/nix/profiles/default/bin` folder but as shell has not been restarted links to those binaries are not available to the session and have to be started from that location
 
-> do not forget to `sudo tail /var/log/cloud-init-output.log -f` to check or observe the finalization of the installation which will take some time after the VM is deployed
+> do not forget to `sudo tail -f /var/log/cloud-init-output.log` to check or observe the finalization of the installation which will take some time after the VM is deployed
 
 ## rg.bicep
 
@@ -350,9 +350,106 @@ Key elements and assumptions:
 - a Network Security Group is created and added to the Subnet which opens SSH-port 22 - for non-experimental use it is advised to place the VM behind a Bastion service, use Just-In-Time access or protect otherwise
 - automatic VM shutdown is achieved with a `DevTestLab/schedules` resource, be aware that such a resource is not available everywhere e.g. missing in Azure China; additionally time zone and point of time are hard-wired currently, please adapt to your own needs
 
-## What is missing?
+## What else can you do with Nix?
 
-In the limited time I had I was not able to figure out, how **Docker** service is completely installed and configured with **Nix**. So watch out for potential updates here.
+### nix-shell - temporarily running packages
+
+`nix-shell` can be used to bring a package temporarily - without modifying your system persistently - to your system and shell into an environment, where you can use the package until you `exit`:
+
+```
+$ nix-shell -p python311 --run python
+Python 3.11.4 (main, Jun  6 2023, 22:16:46) [GCC 12.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+
+In the case of the Nix Python package, it can even be extended that particular Python libraries are made available temporarily:
+
+```
+$ nix-shell -p '((import <nixpkgs> {}).python311.withPackages (p: [p.numpy, p.pandas]))' --run python
+```
+
+### nix-store - managing Nix store
+
+A useful command to clean up local packages from the store, which are no longer linked, is `nix-store --gc`. 
+
+## A slightly advanced configuration
+
+This configuration adds
+
+- activating experimental feature **Nix Flakes**
+- installing **Docker** as a service
+- separates packages I want to have system wide in `/nix/var/nix/profiles/default/bin` (Docker, less and curl) and only for the user in `~/.nix-profile/bin` (Git and Rust toolchain)
+
+```
+#cloud-config
+write_files:
+  - path: /tmp/install-nix.sh
+    content: | 
+      #!/bin/bash
+      sh <(curl -L https://nixos.org/nix/install) --daemon --yes
+      mkdir -p ~/.config/nix
+      echo "experimental-features = nix-command" > ~/.config/nix/nix.conf
+    permissions: '0755'
+  - path: /tmp/root-setup.nix
+    content: | 
+        with import <nixpkgs> {}; [
+          less
+          curl
+          docker
+        ]
+    permissions: '0644'
+  - path: /tmp/user-setup.nix
+    content: | 
+        with import <nixpkgs> {}; [
+          git
+          rustup
+        ]
+    permissions: '0644'
+  - path: /usr/lib/systemd/system/docker.service
+    content: | 
+        [Unit]
+        Description=Docker Application Container Engine
+        Documentation=https://docs.docker.com
+        After=network.target
+
+        [Service]
+        Type=notify
+        # the default is not to use systemd for cgroups because the delegate issues still
+        # exists and systemd currently does not support the cgroup feature set required
+        # for containers run by docker
+        ExecStart=/nix/var/nix/profiles/default/bin/dockerd
+        ExecReload=/bin/kill -s HUP $MAINPID
+        # Having non-zero Limit*s causes performance problems due to accounting overhead
+        # in the kernel. We recommend using cgroups to do container-local accounting.
+        LimitNOFILE=infinity
+        LimitNPROC=infinity
+        LimitCORE=infinity
+        # Uncomment TasksMax if your systemd version supports it.
+        # Only systemd 226 and above support this version.
+        #TasksMax=infinity
+        TimeoutStartSec=0
+        # set delegate yes so that systemd does not reset the cgroups of docker containers
+        Delegate=yes
+        # kill only the docker process, not all processes in the cgroup
+        KillMode=process
+
+        [Install]
+        WantedBy=multi-user.target
+runcmd:
+- export USER=$(awk -v uid=1000 -F":" '{ if($3==uid){print $1} }' /etc/passwd)
+
+- sudo -H -u $USER bash -c '/tmp/install-nix.sh'
+
+# root configuration
+- /nix/var/nix/profiles/default/bin/nix-env -if /tmp/root-setup.nix
+- systemctl enable docker
+- systemctl start docker
+
+# VM user configuration
+- sudo -H -u $USER bash -c '/nix/var/nix/profiles/default/bin/nix-env -if /tmp/user-setup.nix'
+- sudo -H -u $USER bash -c '~/.nix-profile/bin/rustup default stable'
+```
 
 ## Conclusion
 
