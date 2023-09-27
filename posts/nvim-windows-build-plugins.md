@@ -2,16 +2,16 @@
 
 In this post I show or share 
 
-- a PowerShell script to install LLVM / mingw  / make toolchains on Windows to be used by plugin build processes
-- how to install Microsoft Build Tools with `winget` (that in the end did not qualify for all build cases and was discarded)
-- some sample plugin configurations with **Lazy** plugin manager
-- some observations I made with plugin managers not working smoothly through corporate proxy configurations
+- a PowerShell script to install LLVM / mingw  / make toolchains on Windows to be used by NeoVim plugin build processes
+- how to install Microsoft Build Tools with **winget** (that in the end did not qualify for all build cases and was discarded)
+- a sample plugin configurations with **Lazy** plugin manager
+- an observations I made with plugin managers not working smoothly through corporate proxy configurations
 
 ## Background
 
 In a [previous post](https://dev.to/kaiwalter/share-neovim-configuration-between-linux-and-windows-4gh8) I was showing how I was sharing one configuration for NeoVim based on one version of dotfiles in Linux and Windows.
 
-That works pretty well for [Lua](https://www.lua.org/)-only plugins, as long as underlying command line tools like e.g. `ripgrep`  or `lazygit` are also avaible on Windows. As soon as plugins require a tool chain to build those command line tools from source it gets tricky having the same NeoVim configuration facilitating Linux and Windows.
+That works pretty well for [Lua](https://www.lua.org/)-only plugins, as long as underlying command line tools like e.g. `ripgrep`  or `lazygit` are also avaible on Windows. As soon as plugins require a tool chain to build those command line tools from source, some more work is required.
 
 ## Selecting the right build tool chain
 
@@ -69,13 +69,13 @@ $env:Path += ";" + $makePath
 nvim
 ```
 
-Yet this setup was not sufficient for **Telescope/fzf**, as only a **clang** but no **gcc** compiler seemed to be available. I succeeded when adding a **gcc** into the mix but was not really happy with the extra "Visual Studio Developer PowerShell" command prompt required.
+Yet this setup was not sufficient for **Telescope/fzf**, as only a **clang** but obviously no **gcc** compiler seemed to be available with MS Build Tools. I succeeded when adding a **gcc** into the mix, but was not really happy with the extra "Visual Studio Developer PowerShell" command prompt required.
 
 ### LLVM/Clang/LLD based mingw-w64
 
 In this toolchain I found **clang** and **gcc** compilers. Also it allowed me to just add it to the path (see script `NeoVimPluginInstall.ps1` below) of my current shell when directing NeoVim into a plugin installation - without an extra command prompt like above.
 
-That allowed me to use build process configuration for **Telescope/fzf** on Linux and Windows without any changes:
+That helped me to use the same build process configuration for **Telescope/fzf** on Linux and Windows without any changes:
 
 ```
 return {
@@ -85,13 +85,15 @@ return {
 		"nvim-lua/plenary.nvim",
 		{
 			"nvim-telescope/telescope-fzf-native.nvim",
-			build = "make",
+			build = "make", -- <<===== make initiates build process on Windows and Linux
 		},
 		"nvim-tree/nvim-web-devicons",
 	},
 	config = function() 
 ...
 ```
+
+> In the case of this plugin I tried to modify the `build` string from `make` to `cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build` when running on Windows, but even with this small patch I was not able to cleanly succeed with MS Build Tools.
 
 ## NeoVim installation script
 
@@ -100,7 +102,7 @@ Since my [previous post](https://dev.to/kaiwalter/share-neovim-configuration-bet
 - **ripgrep** for Telescope `live_grep` string finder
 - **lazygit** for the equally named plugin
 - **Gnu make** to drive some of the build processes
-- **llvm-mingw64** a [LLVM/Clang/LLD based mingw-w64 toolchain](https://github.com/mstorsjo/llvm-mingw)
+- **llvm-mingw64** the [LLVM/Clang/LLD based mingw-w64 toolchain](https://github.com/mstorsjo/llvm-mingw) from above
 
 ```
 [CmdletBinding()]
@@ -165,22 +167,57 @@ if($ResetState) {
 ```
 
 > ATTENTION: `git@github.com:KaiWalter/dotfiles.git` is my private Dotfiles repo - if you want to replicate my approach you would need to work from your own version;
-> script `.\getLatestGithubRepo.ps1` is shown below
+> script `.\getLatestGithubRepo.ps1` downloads the latest binary / installation file from a GitHub's repo release page and is shown below
 
 ## Lua configuration
 
-While succeeding in getting NeoVim working smoothly with plugins on my own Windows machines, I struggled on my company laptop. Plugin installation with **Packer** was lagging at best sometimes even hanging. As of August'23 it is announced on the [Packer](https://github.com/wbthomason/packer.nvim) repo README, that it is not maintained anymore and suggested to move to another package manager.
+When I started with my NeoVim journey a few months back, I followed the suggestions from the NeoVim main protagonists and looked into some of the NeoVim [distros](https://medium.com/@adaml.poniatowski/exploring-the-top-neovim-distributions-lazyvim-lunarvim-astrovim-and-nvchad-which-one-reigns-3adcdbfa478d) like [LazyVim](https://www.lazyvim.org/),  [LunarVim](https://www.lunarvim.org/), [AstroVim](https://astronvim.com/), and [NVChad](https://nvchad.com/) to make life easier (coming fresh from Visual Studio Code even to make life even bearable). Having no knowledge in the NeoVim plugin ecosystem I struggled and stopped to try to get these distros working in parallel on Linux and Windows. Hence I decided to build a configuration with **Packer** from scratch to find and understand the spots, where it breaks.
 
-When started with NeoVim a few months back I followed the suggestion from the NeoVim main protagonists and looked into some of the NeoVim distros like [LazyVim](https://www.lazyvim.org/) , LunarVim, AstroVim, and NVChad to make like easier (coming fresh from Visual Studio Code even to make life bearable).
-https://github.com/folke/lazy.nvim
+While succeeding in getting NeoVim working smoothly with plugins on my own Windows machines, I struggled on my company laptop. Plugin installation with **Packer** was lagging at best sometimes even hanging. Digging deeper I was able to pin the problem to our companies proxy which was interfering in the package downloads.
 
-https://github.com/josean-dev/dev-environment-files
+Anyway as of August'23 it is announced on the [Packer](https://github.com/wbthomason/packer.nvim) repo README, that it is not maintained anymore and suggested to move to another package manager.
+
+[lazy.nvim](https://github.com/folke/lazy.nvim) seemed to be the next best one package manager for me - also **LazyVim** distro which is based on that package manager and which I checked out earlier best related to what I was looking for. Additionally the download problems with our company proxy did not manifest here.
+
+When converting from **Packer** to **Lazy** I wanted to clean up my configuraton file structure and follow some good practise (which is always subjective, I know) and hence I leaned on the [NeoVim configuration of Josean Martinez](https://github.com/josean-dev/dev-environment-files) which he explains in this [video](https://youtu.be/NL8D8EkphUw):
+
+```
+~/.config/nvim $ tree -n --charset UTF-16
+|-- init.lua
+|-- lazy-lock.json
+`-- lua
+    `-- kws
+        |-- init.lua
+        |-- lazy.lua
+        |-- plugins
+        |   |-- colorschema.lua
+        |   |-- comment.lua
+        |   |-- dap.lua
+        |   |-- dressing.lua
+        |   |-- harpoon.lua
+        |   |-- init.lua
+        |   |-- lsp
+        |   |   |-- lspconfig.lua
+        |   |   |-- mason.lua
+        |   |   `-- null-ls.lua
+        |   |-- lualine.lua
+        |   |-- nvim-cmp.lua
+        |   |-- nvim-tree.lua
+        |   |-- nvim-treesitter.lua
+        |   |-- nvim-treesitter-text-objects.lua
+        |   |-- telescope.lua
+        |   `-- which-key.lua
+        |-- remap.lua
+        `-- utils.lua
+```
+
+So basically `lazy.lua` just bootstraps the package manager itself and then pulls in the plugin specifications from `plugins` and `plugins/lsp` folders.
 
 ## utility scripts
 
 ### NeoVimPluginInstall.ps1
 
-Script used when starting up NeoVim adding tool chain paths to search path, so that build tools can be found:
+While the setup PowerShell script above installs all the tools, I created another script which I use when starting NeoVim with the intention to install or update plugins. I did not want to put these folders on my search path permanently to not pollute the search path too much.
 
 ```
 $llvmPath = Join-Path $(Get-ChildItem -Path $env:LOCALAPPDATA -Filter "llvm*x86_64" | Select-Object -ExpandProperty FullName) "bin"
@@ -191,7 +228,7 @@ nvim $args
 
 ### getLatestGithubRepo.ps1
 
-Script to find and download a given file pattern from a GitHub repo's latest releases:
+This script is a generalization of another [post](https://community.ops.io/kaiwalter/install-winget-latest-release-with-powershell-in-one-go-3kka) to find and download a file with a given complete file name or a file pattern from a GitHub repo's latest releases:
 
 ```
 [CmdletBinding()]
@@ -217,3 +254,9 @@ if ($sc -eq 200) {
     }
 }
 ```
+
+----
+
+## The End
+
+With this setup I am content for the moment. From here I will add LSP servers, stylers, linters and other plugins I expect to improve my productivity. Working exclusively with NeoVim for my very few coding workloads now for ~4 months gives me enough proficiency to really enjoy editing code in my spare time. If I just could have VIM motions in MS Outlook and MS Word :smirk: I would not need to reconfigure my brain when switching from day job to spare time activity.

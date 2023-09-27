@@ -2,7 +2,7 @@
   "title": "Get NeoVim plugins with build processes working on Windows",
   "description": "See how plugins like Telescope Fuzzy Finder and Treesitter can be installed on Windows with a Linux compatible build environment",
   "tags": "neovim, productivity, powershell, windows",
-  "published": false,
+  "published": true,
   "content": "posts/nvim-windows-build-plugins.md",
   "banner100x42": "images/schwarzwasser-2023-06-100x42.png",
   "replacements": {
