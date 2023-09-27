@@ -30,8 +30,17 @@
       "name": "Powershell"
     }
   },
+  "lua": {
+    "devto": "lua",
+    "opsio": "lua"
+  },
   "neovim": {
-    "devto": "neovim"
+    "devto": "neovim",
+    "opsio": "neovim"
+  },
+  "windows": {
+    "devto": "windows",
+    "opsio": "windows"
   },
   "productivity": {
     "opsio": "productivity",
