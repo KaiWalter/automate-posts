@@ -7,6 +7,10 @@ In this post I show or share
 - a sample plugin configurations with **Lazy** plugin manager
 - an observations I made with plugin managers not working smoothly through corporate proxy configurations
 
+## Motivation
+
+I just want to have equal editing experience on Windows and Linux - not having myself to adapt when flipping back and forth. With an ecosystem like Visual Studio Code that is practically given without the need to care. But that's not how I am wired - I want to understand what's going on. Here imho NeoVim with Lua plugins is easier to digest and understand.
+
 ## Background
 
 In a [previous post](https://dev.to/kaiwalter/share-neovim-configuration-between-linux-and-windows-4gh8) I was showing how I was sharing one configuration for NeoVim based on one version of dotfiles in Linux and Windows.
