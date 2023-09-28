@@ -4,7 +4,7 @@
   "tags": "neovim, productivity, powershell, windows",
   "published": true,
   "content": "posts/nvim-windows-build-plugins.md",
-  "banner100x42": "images/schwarzwasser-2023-100x42.png",
+  "banner100x42": "images/neovim-windows-with-lsp.jpeg",
   "replacements": {
     "opsio": [
       {
