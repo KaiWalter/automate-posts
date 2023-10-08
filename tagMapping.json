@@ -19,6 +19,9 @@
       "name": "networking"
     }
   },
+  "queues": {
+    "devto": "queues"
+  },
   "privatelink": {
     "devto": "privatelink"
   },
@@ -38,13 +41,17 @@
     "devto": "neovim",
     "opsio": "neovim"
   },
-  "windows": {
-    "devto": "windows",
-    "opsio": "windows"
-  },
   "productivity": {
     "opsio": "productivity",
     "devto": "productivity"
+  },
+  "scalability": {
+    "devto": "scalability",
+    "opsio": "scalability"
+  },
+  "windows": {
+    "devto": "windows",
+    "opsio": "windows"
   },
   "vscode": {
     "devto": "vscode",
