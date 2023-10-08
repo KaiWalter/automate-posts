@@ -8,6 +8,8 @@ In this post I show
   - Azure Functions on ACA, leaving scaling up to the platform
   - ASP.NET in a container on ACA using Dapr sidecar, apply KEDA scaling
 
+_jump to [results](#results)_
+
 > Although the [sample repo](https://github.com/KaiWalter/message-distribution) also contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
 
 ## Motivation
@@ -31,23 +33,6 @@ To come to a viable comparision, I applied these aspects:
 - test payload (10k messages by default) is send on a queue and **scheduled to exactly the same time** to force the contending stack, to deal with the amount at once
 - both Functions variants are based on **.NET isolated worker**, as Functions on Container Apps only support this model
 - all 3 variantes run staggered on the same Container Apps environment, hence same region, same nodes, same resources
-
-### Solution Elements
-
-- a `Generate` in Function App `testdata` generates a test data payload (e.g. with 10k orders) and puts it in a blob storage
-- one of the `PushIngress...` functions in the very same Function App then can be triggered to schedule all orders at once on an ingress Service Bus queue - either for Functions or for Dapr
-- each of the contestants has a `Dispatch` method which picks the payload for each order from the ingress queue, inspects it and puts it either on a queue for "Standard" or "Express" orders
-- then for these order types there is a separate `Receiver` function which finally processes the dispatched message
-
-![Solution overview showing main components](https://github.com/KaiWalter/message-distribution/blob/main/media/test-setup.png?raw=true)
-
-C# project names and queues use a consistent coding for each contestant:
-
-| code used for solution elements | implementation and deployment approach                                                                                             |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **ACAF**                        | .NET [Azure Functions on ACA deployment](https://learn.microsoft.com/en-us/azure/azure-functions/functions-container-apps-hosting) |
-| **DAPR**                        | ASP.NET with Dapr in a container on ACA                                                                                            |
-| **FUNC**                        | .NET Azure Functions in a container on ACA                                                                                         |
 
 ### Limitations
 
@@ -86,7 +71,196 @@ requests
 
 Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33). When conducting the final battery of tests in October'23 this behavior was gone and Functions scaled as to be expected.
 
-## Results
+### Solution Elements
+
+- a `Generate` in Function App `testdata` generates a test data payload (e.g. with 10k orders) and puts it in a blob storage
+- one of the `PushIngress...` functions in the very same Function App then can be triggered to schedule all orders at once on an ingress Service Bus queue - either for Functions or for Dapr
+- each of the contestants has a `Dispatch` method which picks the payload for each order from the ingress queue, inspects it and puts it either on a queue for "Standard" or "Express" orders
+- then for these order types there is a separate `Receiver` function which finally processes the dispatched message
+
+![Solution overview showing main components](https://github.com/KaiWalter/message-distribution/blob/main/media/test-setup.png?raw=true)
+
+C# project names and queues use a consistent coding for each contestant:
+
+| code used for solution elements | implementation and deployment approach                                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **ACAF**                        | .NET [Azure Functions on ACA deployment](https://learn.microsoft.com/en-us/azure/azure-functions/functions-container-apps-hosting) |
+| **DAPR**                        | ASP.NET with Dapr in a container on ACA                                                                                            |
+| **FUNC**                        | .NET Azure Functions in a container on ACA                                                                                         |
+
+#### Dispatcher
+
+As .NET isolated does not support multiple outputs for Functions, an optional message output is required: either put into `StandardMessage` or `ExpressMessage`:
+
+```csharp
+using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
+using Models;
+using System.Text;
+using System.Text.Json;
+
+namespace funcdistributor
+{
+    public class Dispatch
+    {
+        [Function("Dispatch")]
+        public DispatchedOutput Run(
+            [ServiceBusTrigger("q-order-ingress-func", Connection = "SERVICEBUS_CONNECTION")] string ingressMessage,
+            ILogger log)
+        {
+            ArgumentNullException.ThrowIfNull(ingressMessage, nameof(ingressMessage));
+
+            var order = JsonSerializer.Deserialize<Order>(ingressMessage);
+
+            ArgumentNullException.ThrowIfNull(order, nameof(ingressMessage));
+
+            var outputMessage = new DispatchedOutput();
+
+            switch (order.Delivery)
+            {
+                case Delivery.Express:
+                    outputMessage.ExpressMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(order)))
+                    {
+                        ContentType = "application/json",
+                        MessageId = order.OrderId.ToString(),
+                    };
+                    break;
+                case Delivery.Standard:
+                    outputMessage.StandardMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(order)))
+                    {
+                        ContentType = "application/json",
+                        MessageId = order.OrderId.ToString(),
+                    };
+                    break;
+                default:
+                    log.LogError($"invalid Delivery type: {order.Delivery}");
+                    break;
+            }
+
+            return outputMessage;
+        }
+    }
+
+    public class DispatchedOutput
+    {
+        [ServiceBusOutput("q-order-express-func", Connection = "SERVICEBUS_CONNECTION")]
+        public ServiceBusMessage? ExpressMessage { get; set; }
+
+        [ServiceBusOutput("q-order-standard-func", Connection = "SERVICEBUS_CONNECTION")]
+        public ServiceBusMessage? StandardMessage { get; set; }
+    }
+}
+```
+
+For Dapr this dispatcher is implemented with minimal API just in the top-level file `Program.cs` - a very concise way almost in Node.js style:
+
+```csharp
+app.MapPost("/q-order-ingress-dapr", async (
+    [FromBody] Order order,
+    [FromServices] DaprClient daprClient
+    ) =>
+{
+    switch (order.Delivery)
+    {
+        case Delivery.Express:
+            await daprClient.InvokeBindingAsync("q-order-express-dapr", "create", order);
+            break;
+        case Delivery.Standard:
+            await daprClient.InvokeBindingAsync("q-order-standard-dapr", "create", order);
+            break;
+    }
+
+    return Results.Ok(order);
+});
+```
+
+#### Receiver
+
+in Functions:
+
+```csharp
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
+using Models;
+using System.Text.Json;
+using System;
+
+namespace acafrecvexp
+{
+    public class Receiver
+    {
+        [Function("Receiver")]
+        public void Run(
+            [ServiceBusTrigger("q-order-express-acaf", Connection = "SERVICEBUS_CONNECTION")] string ingressMessage,
+            FunctionContext executionContext
+            )
+        {
+            var logger = executionContext.GetLogger("Receiver");
+
+            ArgumentNullException.ThrowIfNull(ingressMessage, nameof(ingressMessage));
+
+            var order = JsonSerializer.Deserialize<Order>(ingressMessage);
+
+            ArgumentNullException.ThrowIfNull(order, nameof(order));
+
+            logger.LogInformation("{Delivery} Order received {OrderId}", order.Delivery, order.OrderId);
+        }
+    }
+}
+```
+
+in Dapr with minimal API:
+
+```csharp
+app.MapPost("/q-order-express-dapr", (
+    ILogger<Program> log, 
+    [FromBody] Order order
+    ) => 
+{
+    log.LogInformation("{Delivery} Order received {OrderId}", order.Delivery, order.OrderId);
+    return Results.Ok();
+});
+```
+
+#### Scaling
+
+For the Functions and Dapr Container App, a scaling rule can be set. For Functions on ACA this is handled by the platform.
+
+```
+      scale: {
+        minReplicas: 1
+        maxReplicas: 10
+        rules: [
+          {
+            name: 'queue-rule'
+            custom: {
+              type: 'azure-servicebus'
+              metadata: {
+                queueName: entityNameForScaling
+                namespace: serviceBusNamespace.name
+                messageCount: '100'
+              }
+              auth: [
+                {
+                  secretRef: 'servicebus-connection'
+                  triggerParameter: 'connection'
+                }
+              ]
+            }
+
+          }
+        ]
+      }
+
+```
+
+> This setting makes ACA scale replicas up when there are more than 100 messages in active queue.
+
+----
+
+## Results<a name="results"></a>
 
 A first batch of tests in August'23 revealed no substantial disparity between the stacks:
 
@@ -96,6 +270,8 @@ To capture the final results in October'23, I ...
 
 - upgraded dependencies of the .NET projects (e.g. to Dapr 1.11)
 - switched from Azure Service Bus Standard Tier to Premium because of that throttling issue explained below, which imho gave the whole scneario a major boost
+
+----
 
 ## Learnings and Gotchas
 
