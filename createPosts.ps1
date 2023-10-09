@@ -8,12 +8,12 @@
 
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true,
-        ValueFromPipeline = $true,
-        HelpMessage = 'Lowercase, alphabetic name of post')]
-    [ValidatePattern('^[a-z\-]+$')]
-    [string]$PostName,
-    [string]$GitHubBlobRoot = "https://raw.githubusercontent.com/KaiWalter/automate-posts/main/"
+  [Parameter(Mandatory = $true,
+    ValueFromPipeline = $true,
+    HelpMessage = 'Lowercase, alphabetic name of post')]
+  [ValidatePattern('^[a-z\-]+$')]
+  [string]$PostName,
+  [string]$GitHubBlobRoot = "https://raw.githubusercontent.com/KaiWalter/automate-posts/main/"
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,18 +37,22 @@ $postDefinition = Get-Content $(Join-Path "." "posts" $($PostName + ".json") -Re
 $title = $postDefinition.title
 $selectedTags = "(" + $($postDefinition.tags -replace ",\s+", "|") + ")"
 
-if ($postDefinition.banner100x42) {
-    if (!(Test-Path $postDefinition.banner100x42)) {
-        Write-Host "Banner image not found: $($postDefinition.banner100x42)"
-        return
-    }
+if ($postDefinition.banner100x42)
+{
+  if (!(Test-Path $postDefinition.banner100x42))
+  {
+    Write-Host "Banner image not found: $($postDefinition.banner100x42)"
+    return
+  }
 }
 
-if ($postDefinition.content) {
-    if (!(Test-Path $postDefinition.content)) {
-        Write-Host "Content file not found: $($postDefinition.content)"
-        return
-    }
+if ($postDefinition.content)
+{
+  if (!(Test-Path $postDefinition.content))
+  {
+    Write-Host "Content file not found: $($postDefinition.content)"
+    return
+  }
 }
 
 $coverImageUrl = $GitHubBlobRoot + $postDefinition.banner100x42
@@ -65,33 +69,33 @@ $postHashnodeContent = Get-PlatformReplacements -postBody $postContent -replacem
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto"
 $devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
-    -postBody $postDevToContent `
-    -title $title `
-    -coverImageUrl $coverImageUrl `
-    -tags $tags `
-    -published $postDefinition.published `
-    -headers $devtoHeaders
+  -postBody $postDevToContent `
+  -title $title `
+  -coverImageUrl $coverImageUrl `
+  -tags $tags `
+  -published $postDefinition.published `
+  -headers $devtoHeaders
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
 $opsioResponse = Update-Forum -baseUrl "https://community.ops.io/api/articles"`
-    -postBody $postOpsIoContent `
-    -title $title `
-    -coverImageUrl $coverImageUrl `
-    -tags $tags `
-    -published $postDefinition.published `
-    -headers $opsioHeaders
+  -postBody $postOpsIoContent `
+  -title $title `
+  -coverImageUrl $coverImageUrl `
+  -tags $tags `
+  -published $postDefinition.published `
+  -headers $opsioHeaders
 
-if ($postDefinition.published) {
-
-    $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "hashnode"
-    Update-HashNode -baseUrl "https://api.hashnode.com"`
-        -postBody $postHashnodeContent `
-        -title $title `
-        -subtitle $description `
-        -coverImageUrl $coverImageUrl `
-        -tags $tags `
-        -headers $hashnodeHeaders `
-        -hashnodePublicationId $hashnodePublicationId `
-        -hashnodeUsername $hashnodeUsername
-        
-}
+# if ($postDefinition.published) {
+#
+#     $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "hashnode"
+#     Update-HashNode -baseUrl "https://api.hashnode.com"`
+#         -postBody $postHashnodeContent `
+#         -title $title `
+#         -subtitle $description `
+#         -coverImageUrl $coverImageUrl `
+#         -tags $tags `
+#         -headers $hashnodeHeaders `
+#         -hashnodePublicationId $hashnodePublicationId `
+#         -hashnodeUsername $hashnodeUsername
+#         
+# }

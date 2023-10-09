@@ -2,7 +2,7 @@
 
 In this post I show
 
-- (mainly) how .NET **Azure Functions** (in the 2 currently available hosting options on **Azure Container Apps**) can be compared to a ASP.NET Dapr application in terms of asynchronous messaging throughput
+- (mainly) how .NET **Azure Functions** (in the 2 currently available hosting options on **Azure Container Apps**) can be compared to a **ASP.NET Dapr** application in terms of asynchronous messaging throughput
 - some learnings when deploying the 3 variants on ACA (=Azure Container Apps):
   - Azure Functions in a container on ACA, applying KEDA scaling
   - Azure Functions on ACA, leaving scaling up to the platform
@@ -10,15 +10,15 @@ In this post I show
 
 _jump to [results](#results)_
 
-> Although the [sample repo](https://github.com/KaiWalter/message-distribution) also contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
+> Although the [sample repo](https://github.com/KaiWalter/message-distribution) additional to **Bash/Azure CLI** contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
 
 ## Motivation
 
-[Azure Container Apps hosting of Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-container-apps-hosting) is a way to host Azure Functions directly in Container Apps - additionally to App Service with and without containers. This offering also adds some Container Apps built-in capabilities like [KEDA](https://keda.sh/) scaling and the [Dapr](https://dapr.io/) microservices framework which would allow for mixing microservices workloads on the same environment with Functions.
+[Azure Container Apps hosting of Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-container-apps-hosting) is a way to host Azure Functions directly in Container Apps - additionally to App Service with and without containers. This offering also adds some Container Apps built-in capabilities like the [Dapr](https://dapr.io/) microservices framework which would allow for mixing microservices workloads on the same environment with Functions.
 
 Running a sufficiently big workload already with Azure Functions inside containers on Azure Container Apps for a while, I wanted to see how both variants compare in terms of features and above all : scaling.
 
-With [another environment](https://customers.microsoft.com/en-us/story/1336089737047375040-zeiss-accelerates-cloud-first-development-on-azure-and-streamlines-order-processing) we heavily rely on **Dapr** for synchronous invocations as well as asynchronous message processing. Hence additionally I wanted to see whether one of the frameworks - Azure Functions host with its bindings or Dapr with its generic components and the sidecar architecture - substantially stands out in terms of throughput.
+With [another environment](https://customers.microsoft.com/en-us/story/1336089737047375040-zeiss-accelerates-cloud-first-development-on-azure-and-streamlines-order-processing) we heavily rely on **Dapr** for synchronous invocations as well as asynchronous message processing. Hence additionally I wanted to see whether one of the frameworks promoted by Microsoft - Azure Functions host with its bindings or Dapr with its generic components and the sidecar architecture - substantially stands out in terms of throughput.
 
 ## Solution Overview
 
@@ -29,15 +29,15 @@ The test environment can be deployed from this [repo](https://github.com/KaiWalt
 To come to a viable comparision, I applied these aspects:
 
 - logic for all contenders is written in **C# / .NET 7**
-- all contenders need to process the **exact same volume** and structure of payloads - which is generated once
-- test payload (10k messages by default) is send on a queue and **scheduled to exactly the same time** to force the contending stack, to deal with the amount at once
+- all contenders need to process the **exact same volume** and structure of payloads - which is generated once and then sent to them for processing
+- test payload (10k messages by default) is send on a queue and **scheduled to exactly the same time** to force the stack, to deal with the amount at once
 - both Functions variants are based on **.NET isolated worker**, as Functions on Container Apps only support this model
-- all 3 variantes run staggered on the same Container Apps environment, hence same region, same nodes, same resources
+- all 3 variantes run staggered, not at the same time, on the same Container Apps environment, hence same region, same nodes, same resources ...
 
 ### Limitations
 
-- Only **Service Bus queues** are tested. Of course, a scenario like this can also be achieved with pub/sub Service Bus **topics** and subscriptions. In the enterprise workloads, where we apply this pattern, we however stick with queues as these allow a dedicated dead-lettering at each stage of the process - compared to topics, where moving messages from _dead-letter_ to _active_ results in all subscribers (if not explicitly filtered) receivng these messsages again.
-- Currently not all capabilities of the contesting stacks - like Dapr bulk message processing - are maxed out. Hence there is obviously still some potential into improving individual throughput.
+- Only **Service Bus queues** are tested. Of course, a scenario like this can also be achieved with pub/sub Service Bus **topics** and subscriptions. However in our enterprise workloads, where we apply this pattern, we work with queues as these allow a dedicated dead-lettering at each stage of the process - compared to topics, where moving messages from _dead-letter_ to _active_ results in all subscribers (if not explicitly filtered) receivng these messsages again.
+- Currently not all capabilities of the contesting stacks - like Dapr bulk message processing - are maxed out. Hence there is obviously still some potential for improving individual throughput.
 
 ### Measuring Throughput
 
@@ -69,7 +69,7 @@ requests
 
 ![Lagged scaling for Functions on ACA](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-scaling-acaf.png?raw=true)
 
-Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33). When conducting the final battery of tests in October'23 this behavior was gone and Functions scaled as to be expected.
+Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33). When conducting the final battery of tests in October'23 this behavior was partially gone (see results below) and Functions scaled as to be expected.
 
 ### Solution Elements
 
@@ -275,7 +275,7 @@ After these upgrades and probably backend rework done by Microsoft now a much cl
 
 ![comparing total runtimes in October](../images/2023-10-dapr-func-aca-totals.png)
 
-Looking on the time dimension one can see that Functions on ACA has a wide spread of even processing faster than Dapr to absolute outliers:
+Looking on the time dimension one can see that Functions on ACA has a wider spread of durations - even processing faster than Dapr at some points:
 
 ![comparing runtimes over time in October](../images/2023-10-dapr-func-aca-time.png)
 
@@ -283,7 +283,103 @@ Looking on the time dimension one can see that Functions on ACA has a wide sprea
 
 ## Nuggets and Gotchas
 
-Appart from the plain throughput evaluation above, I want to add the issues I stumbled over along the way - I guess the real "meat" of this post:
+Appart from the plain throughput evaluation above, I want to add the issues I stumbled over along the way - I guess this is the real "meat" of this post:
+
+### Deploying Container Apps with no App yet built
+
+When deploying infrastructure without the apps yet being build, a Functions on ACA already needs a suitable container image to spin up. I solved this in **Bicep** evaluating whether a ACR container image name was provided or not. Additional challenge then is that _DOCKER_REGISTRY..._ credentials are required for the final app image but not for the tempory dummy image.
+
+```
+...
+var effectiveImageName = imageName != '' ? imageName : 'mcr.microsoft.com/azure-functions/dotnet7-quickstart-demo:1.0'
+
+var appSetingsBasic = [
+  {
+    name: 'AzureWebJobsStorage'
+    value: 'DefaultEndpointsProtocol=https;AccountName=${stg.name};AccountKey=${stg.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+  }
+  {
+    name: 'STORAGE_CONNECTION'
+    value: 'DefaultEndpointsProtocol=https;AccountName=${stg.name};AccountKey=${stg.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+  }
+  {
+    name: 'SERVICEBUS_CONNECTION'
+    value: '${listKeys('${serviceBusNamespace.id}/AuthorizationRules/RootManageSharedAccessKey', serviceBusNamespace.apiVersion).primaryConnectionString}'
+  }
+  {
+    name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+    value: appInsights.properties.ConnectionString
+  }
+]
+
+var appSetingsRegistry = [
+  {
+    name: 'DOCKER_REGISTRY_SERVER_URL'
+    value: containerRegistry.properties.loginServer
+  }
+  {
+    name: 'DOCKER_REGISTRY_SERVER_USERNAME'
+    value: containerRegistry.listCredentials().username
+  }
+  {
+    name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
+    value: containerRegistry.listCredentials().passwords[0].value
+  }
+  // https://github.com/Azure/Azure-Functions/wiki/When-and-Why-should-I-set-WEBSITE_ENABLE_APP_SERVICE_STORAGE
+  // case 3a
+  {
+    name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
+    value: 'false'
+  }
+]
+
+var appSettings = concat(appSetingsBasic, imageName != '' ? appSetingsRegistry : [])
+
+resource acafunction 'Microsoft.Web/sites@2022-09-01' = {
+  name: '${envName}${appName}'
+  location: location
+  tags: union(tags, {
+      'azd-service-name': appName
+    })
+  kind: 'functionapp'
+  properties: {
+    managedEnvironmentId: containerAppsEnvironment.id
+
+    siteConfig: {
+      linuxFxVersion: 'DOCKER|${effectiveImageName}'
+      appSettings: appSettings
+    }
+  }
+}
+```
+
+> Exactly at this point I struggle with **Azure Developer CLI** currently: I am able to deploy **infra** with the dummy image but as soon as I want to deploy the **service**, the service deployment does not apply the above logic and set the _DOCKER_REGISTRY..._ credentials. Triggering the very same **Bicep** templates with **Azure CLI** seems to handle this switch properly.
+> I had to use these credentials as managed identity was not working yet as supposed.
+
+### Channeling .env values into Bash scripts for Azure CLI
+
+Coming from **Azure Developer CLI** where I channel environment values with `source <(azd env get-values)` into **Bash**, I wanted to re-use as much of the scripts for **Azure CLI** as possible.
+
+For that I created a `.env` file in repository root like ...
+
+```
+AZURE_ENV_NAME="kw-md"
+AZURE_LOCATION="westeurope"
+```
+
+... and then source its values into **Bash** from which I then derive resource names to operate on with **Azure CLI**
+
+```bash
+#!/bin/bash
+source <(cat $(git rev-parse --show-toplevel)/.env)
+
+RESOURCE_GROUP_NAME=`az group list  --query "[?starts_with(name,'$AZURE_ENV_NAME')].name" -o tsv`
+AZURE_CONTAINER_REGISTRY_NAME=`az resource list --tag azd-env-name=$AZURE_ENV_NAME --query "[?type=='Microsoft.ContainerRegistry/registries'].name" -o tsv`
+AZURE_CONTAINER_REGISTRY_ENDPOINT=`az acr show -n $AZURE_CONTAINER_REGISTRY_NAME --query loginServer -o tsv`
+AZURE_CONTAINER_REGISTRY_ACRPULL_ID=`az identity list -g $RESOURCE_GROUP_NAME --query "[?ends_with(name,'acrpull')].id" -o tsv`
+AZURE_KEY_VAULT_SERVICE_GET_ID=`az identity list -g $RESOURCE_GROUP_NAME --query "[?ends_with(name,'kv-get')].id" -o tsv`
+...
+```
 
 ### Dapr batching
 
@@ -400,4 +496,16 @@ So it seems, that between sending messages into and receiving messages from a qu
 
 ![Graph showing that Azure Service Bus Standard is throttling](../images/comparing-functions-dapr-aca-throttling.png)
 
-OK, but why? Reviewing [how Azure Service Bus Standard Tier is handling throttling](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-throttling#what-are-the-credit-limits) and considering the approach of moving 10.000 messages at once from _scheduled_ to _active_ hints towards this easily crashing the credit limit applied in Standard Tier.
+OK, but why? Reviewing [how Azure Service Bus Standard Tier is handling throttling](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-throttling#what-are-the-credit-limits) and considering the approach of moving 10.000 messages at once from _scheduled_ to _active_ hints towards this easily crashing the credit limit applied in Standard Tier. After changing to Premium Tier these throttlings definetely were gone. However when packing so much load simultaneously on the Functions stacks it seems to be system immanent, that not 100% of Functions requests are logged to Application Insights. According to my information this limitation should be put to Azure Functions some time soon.
+
+---
+
+## Conclusion
+
+From [results](#results) above one might immediately jump to conclude that Dapr (in an ASP.NET frame) suits best for such a message forwaring scenario, because it seems to offer best throughput and when combined with C# minimal APIs a simple enough programming model. Knowing from experience, this simple programming model will not necessarily scale to complex solutions or services with many endpoints and where a certain structure of code (see Clean Architecture etc.) and re-usability is required. Here the simplicity of Functions programming model _input-processing-output_  really can help scale even with not so mature teams - for certain scenarios. So as always in architecture it is about weighing aspects which are important to a planned environment: here technical performance vs team performance.
+
+Azure Functions on Container Apps combined with [Dapr extension](https://github.com/Azure/azure-functions-dapr-extension) may help bringing some other aspects together: the capability to connect a huge variety of cloud resources with **Dapr** paired with the simple programming model of **Azure Functions**. I shall write about this topic soon in a future post.
+
+Cheers,
+Kai
+
