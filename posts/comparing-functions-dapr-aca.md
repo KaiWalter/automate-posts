@@ -269,15 +269,17 @@ A first batch of tests in August'23 revealed no substantial disparity between th
 To capture the final results in October'23, I ...
 
 - upgraded dependencies of the .NET projects (e.g. to Dapr 1.11)
-- switched from Azure Service Bus Standard Tier to Premium because of that throttling issue explained below, which imho gave the whole scneario a major boost
+- switched from Azure Service Bus Standard Tier to Premium because of that throttling issue explained below, which imho gave the whole scenario a major boost
 
-After these upgrades and probably backend rework done by Microsoft now a much clearer spread of average durations can be seen: Dapr is clearly handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
+After these upgrades and probably backend rework done by Microsoft now a much clearer spread of average durations can be seen: Dapr is obviously handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
 
 ![comparing total runtimes in October](../images/2023-10-dapr-func-aca-totals.png)
 
 Looking on the time dimension one can see that Functions on ACA has a wider spread of durations - even processing faster than Dapr at some points:
 
 ![comparing runtimes over time in October](../images/2023-10-dapr-func-aca-time.png)
+
+I am sure, that throughput of all variants can be improved by investing more time in measuring and fine tuning. My approach was to see what I can get out of the environment with a feasible amount of effort.
 
 ----
 
