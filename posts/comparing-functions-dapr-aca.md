@@ -90,7 +90,7 @@ C# project names and queues use a consistent coding for each contestant:
 
 #### Dispatcher
 
-As .NET isolated does not support multiple outputs for Functions, an optional message output is required: either put into `StandardMessage` or `ExpressMessage`:
+As .NET isolated does not support multiple outputs for Functions, an optional message output is required to either put message into `StandardMessage` or `ExpressMessage`:
 
 ```csharp
 using Azure.Messaging.ServiceBus;
@@ -264,16 +264,24 @@ For the Functions and Dapr Container App, a scaling rule can be set. For Functio
 
 A first batch of tests in August'23 revealed no substantial disparity between the stacks:
 
-![comparing runtimes](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-results.png?raw=true)
+![comparing runtimes in August](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-results.png?raw=true)
 
 To capture the final results in October'23, I ...
 
 - upgraded dependencies of the .NET projects (e.g. to Dapr 1.11)
 - switched from Azure Service Bus Standard Tier to Premium because of that throttling issue explained below, which imho gave the whole scneario a major boost
 
+After these upgrades and probably backend rework done by Microsoft now a much clearer spread of average durations can be seen: Dapr is clearly handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
+
+![comparing total runtimes in October](../images/2023-10-dapr-func-aca-totals.png)
+
+Looking on the time dimension one can see that Functions on ACA has a wide spread of even processing faster than Dapr to absolute outliers:
+
+![comparing runtimes over time in October](../images/2023-10-dapr-func-aca-time.png)
+
 ----
 
-## Learnings and Gotchas
+## Nuggets and Gotchas
 
 Appart from the plain throughput evaluation above, I want to add the issues I stumbled over along the way - I guess the real "meat" of this post:
 
