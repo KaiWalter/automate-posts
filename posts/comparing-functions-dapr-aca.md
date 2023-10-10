@@ -7,6 +7,8 @@ In this post I show
   - Azure Functions in a container on ACA, applying KEDA scaling
   - Azure Functions on ACA, leaving scaling up to the platform
   - ASP.NET in a container on ACA using Dapr sidecar, apply KEDA scaling
+- Extending ApplicationInsights cloud_RoleName and cloud_RoleInstance for Dapr to see instance names in telemetry
+
 
 _jump to [results](#results)_
 
@@ -357,6 +359,49 @@ resource acafunction 'Microsoft.Web/sites@2022-09-01' = {
 
 > Exactly at this point I struggle with **Azure Developer CLI** currently: I am able to deploy **infra** with the dummy image but as soon as I want to deploy the **service**, the service deployment does not apply the above logic and set the _DOCKER_REGISTRY..._ credentials. Triggering the very same **Bicep** templates with **Azure CLI** seems to handle this switch properly.
 > I had to use these credentials as managed identity was not working yet as supposed.
+
+### Extending ApplicationInsights cloud_RoleName and cloud_RoleInstance for Dapr
+
+When hosting ASP.NET with Dapr on Container Apps, `cloud_RoleName` and `cloud_RoleInstance` are not populated - which I needed to evaluate how many instances / replicas are scaled.
+
+[AppInsightsTelemetryInitializer.cs]( https://github.com/KaiWalter/message-distribution/blob/main/src/daprdistributor/AppInsightsTelemetryInitializer.cs):
+
+```csharp
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.Extensibility;
+
+namespace Utils
+{
+
+    public class AppInsightsTelemetryInitializer : ITelemetryInitializer
+    {
+        public void Initialize(ITelemetry telemetry)
+        {
+            if (string.IsNullOrEmpty(telemetry.Context.Cloud.RoleName))
+            {
+                telemetry.Context.Cloud.RoleName = System.Environment.GetEnvironmentVariable("CONTAINER_APP_NAME") ?? "CONTAINER_APP_NAME-not-set";
+            }
+            if (string.IsNullOrEmpty(telemetry.Context.Cloud.RoleInstance))
+            {
+                telemetry.Context.Cloud.RoleInstance = System.Environment.GetEnvironmentVariable("HOSTNAME") ?? "HOSTNAME-not-set";
+            }
+        }
+    }
+
+}
+```
+
+Program.cs:
+
+```csharp
+...
+builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.Configure<TelemetryConfiguration>((o) =>
+{
+    o.TelemetryInitializers.Add(new AppInsightsTelemetryInitializer());
+});
+...
+```
 
 ### Channeling .env values into Bash scripts for Azure CLI
 
