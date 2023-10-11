@@ -7,7 +7,7 @@ In this post I show
   - Azure Functions in a container on ACA, applying KEDA scaling
   - Azure Functions on ACA, leaving scaling up to the platform
   - ASP.NET in a container on ACA using Dapr sidecar, apply KEDA scaling
-- Extending ApplicationInsights cloud_RoleName and cloud_RoleInstance for Dapr to see instance names in telemetry
+- extending ApplicationInsights cloud_RoleName and cloud_RoleInstance for Dapr to see instance names in telemetry
 
 
 _jump to [results](#results)_
@@ -71,7 +71,11 @@ requests
 
 ![Lagged scaling for Functions on ACA](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-scaling-acaf.png?raw=true)
 
-Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33). When conducting the final battery of tests in October'23 this behavior was partially gone (see results below) and Functions scaled as to be expected.
+Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33):
+
+> "Initially, some default numbers of nodes are allocated for any ACA environment. During scaling, ACA uses these nodes to create app instances. For container apps scaling, the default number of nodes are sufficient as it uses less cpu, memory per instance. For function apps scaling, the default number of nodes is not sufficient and thus, ACA environment requests more nodes in backend. After new nodes are available to ACA environment, it uses them to create remaining instances for Function app. It takes some time to fetch new nodes and create remaining instances, therefore, we see a gap in processing between both deployments."
+
+When conducting the final battery of tests in October'23 this behavior was partially gone (see results below) when sufficient Functions relevant nodes already had been scaled.
 
 ### Solution Elements
 
