@@ -9,10 +9,9 @@ In this post I show
   - ASP.NET in a container on ACA using Dapr sidecar, apply KEDA scaling
 - extending ApplicationInsights cloud_RoleName and cloud_RoleInstance for Dapr to see instance names in telemetry
 
-
 _jump to [results](#results)_
 
-> Although the [sample repo](https://github.com/KaiWalter/message-distribution) additional to **Bash/Azure CLI** contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
+> Although the [sample repo](https://github.com/KaiWalter/message-distribution/tree/v1.0) additional to **Bash/Azure CLI** contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
 
 ## Motivation
 
@@ -24,7 +23,7 @@ With [another environment](https://customers.microsoft.com/en-us/story/133608973
 
 ## Solution Overview
 
-The test environment can be deployed from this [repo](https://github.com/KaiWalter/message-distribution) - `README.md` describes the steps required.
+The test environment can be deployed from this [repo](https://github.com/KaiWalter/message-distribution/tree/v1.0) - `README.md` describes the steps required.
 
 ### Approach
 
@@ -65,11 +64,11 @@ requests
 
 ... to see whether the platform / stack scales in an expected pattern, ...
 
-![Regular scaling of Functions container](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-scaling-func.png?raw=true)
+![Regular scaling of Functions container](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/2023-08-08-scaling-func.png?raw=true)
 
 ... which pointed me to a strange scaling lag for Azure Functions on ACA:
 
-![Lagged scaling for Functions on ACA](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-scaling-acaf.png?raw=true)
+![Lagged scaling for Functions on ACA](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/2023-08-08-scaling-acaf.png?raw=true)
 
 Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33):
 
@@ -84,7 +83,7 @@ When conducting the final battery of tests in October'23 this behavior was parti
 - each of the contestants has a `Dispatch` method which picks the payload for each order from the ingress queue, inspects it and puts it either on a queue for "Standard" or "Express" orders
 - then for these order types there is a separate `Receiver` function which finally processes the dispatched message
 
-![Solution overview showing main components](https://github.com/KaiWalter/message-distribution/blob/main/media/test-setup.png?raw=true)
+![Solution overview showing main components](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/test-setup.png?raw=true)
 
 C# project names and queues use a consistent coding for each contestant:
 
@@ -221,9 +220,9 @@ in Dapr with minimal API:
 
 ```csharp
 app.MapPost("/q-order-express-dapr", (
-    ILogger<Program> log, 
+    ILogger<Program> log,
     [FromBody] Order order
-    ) => 
+    ) =>
 {
     log.LogInformation("{Delivery} Order received {OrderId}", order.Delivery, order.OrderId);
     return Results.Ok();
@@ -264,13 +263,13 @@ For the Functions and Dapr Container App, a scaling rule can be set. For Functio
 
 > This setting makes ACA scale replicas up when there are more than 100 messages in active queue.
 
-----
+---
 
 ## Results<a name="results"></a>
 
 A first batch of tests in August'23 revealed no substantial disparity between the stacks:
 
-![comparing runtimes in August](https://github.com/KaiWalter/message-distribution/blob/main/media/2023-08-08-results.png?raw=true)
+![comparing runtimes in August](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/2023-08-08-results.png?raw=true)
 
 To capture the final results in October'23, I ...
 
@@ -287,7 +286,7 @@ Looking on the time dimension one can see that Functions on ACA has a wider spre
 
 I am sure, that throughput of all variants can be improved by investing more time in measuring and fine tuning. My approach was to see what I can get out of the environment with a feasible amount of effort.
 
-----
+---
 
 ## Nuggets and Gotchas
 
@@ -368,7 +367,7 @@ resource acafunction 'Microsoft.Web/sites@2022-09-01' = {
 
 When hosting ASP.NET with Dapr on Container Apps, `cloud_RoleName` and `cloud_RoleInstance` are not populated - which I needed to evaluate how many instances / replicas are scaled.
 
-[AppInsightsTelemetryInitializer.cs]( https://github.com/KaiWalter/message-distribution/blob/main/src/daprdistributor/AppInsightsTelemetryInitializer.cs):
+[AppInsightsTelemetryInitializer.cs](https://github.com/KaiWalter/message-distribution/blob/v1.0/src/daprdistributor/AppInsightsTelemetryInitializer.cs):
 
 ```csharp
 using Microsoft.ApplicationInsights.Channel;
@@ -432,7 +431,7 @@ AZURE_KEY_VAULT_SERVICE_GET_ID=`az identity list -g $RESOURCE_GROUP_NAME --query
 ...
 ```
 
-### Dapr batching
+### Dapr batching and bulk-message handling
 
 Dapr input binding and pub/sub Service Bus components need to be set to values much higher than [the defaults](https://docs.dapr.io/reference/components-reference/supported-bindings/servicebusqueues/) to get a processing time better than Functions - keeping defaults shows Dapr E2E processing time almost factor 2 compared to Functions.
 
@@ -444,6 +443,15 @@ Dapr input binding and pub/sub Service Bus components need to be set to values m
         {
           name: 'maxConcurrentHandlers'
           value: '8'
+        }
+```
+
+While activating bulk-message handling on the ServiceBus Dapr component did not show any significant effect.
+
+```
+        {
+          name: 'maxBulkSubCount'
+          value: '100'
         }
 ```
 
@@ -553,10 +561,9 @@ OK, but why? Reviewing [how Azure Service Bus Standard Tier is handling throttli
 
 ## Conclusion
 
-From [results](#results) above one might immediately jump to conclude that Dapr (in an ASP.NET frame) suits best for such a message forwarding scenario, because it seems to offer best throughput and when combined with C# minimal APIs a simple enough programming model. Knowing from experience, this simple programming model will not necessarily scale to complex solutions or services with many endpoints and where a certain structure of code (see Clean Architecture etc.) and re-usability is required. Here the simplicity of Functions programming model _input-processing-output_  really can help scale even with not so mature teams - for certain scenarios. So as always in architecture it is about weighing aspects which are important to a planned environment: here technical performance vs team performance.
+From [results](#results) above one might immediately jump to conclude that Dapr (in an ASP.NET frame) suits best for such a message forwarding scenario, because it seems to offer best throughput and when combined with C# minimal APIs a simple enough programming model. Knowing from experience, this simple programming model will not necessarily scale to complex solutions or services with many endpoints and where a certain structure of code (see Clean Architecture etc.) and re-usability is required. Here the simplicity of Functions programming model _input-processing-output_ really can help scale even with not so mature teams - for certain scenarios. So as always in architecture it is about weighing aspects which are important to a planned environment: here technical performance vs team performance.
 
 Azure Functions on Container Apps combined with [Dapr extension](https://github.com/Azure/azure-functions-dapr-extension) may help bringing some other aspects together: the capability to connect a huge variety of cloud resources with **Dapr** paired with the simple programming model of **Azure Functions**. I shall write about this topic soon in a future post.
 
 Cheers,
 Kai
-
