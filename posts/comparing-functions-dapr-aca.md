@@ -278,11 +278,15 @@ To capture the final results in October'23, I ...
 
 After these upgrades and probably backend rework done by Microsoft now a much clearer spread of average durations can be seen: Dapr is obviously handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
 
-![comparing total runtimes in October](../images/2023-10-dapr-func-aca-totals.png)
+| West Europe | West US |
+| ---- | ---- |
+| ![comparing total runtimes in October in West Europe](../images/2023-10-dapr-func-aca-totals-weu.png) | ![comparing total runtimes in October West US](../images/2023-10-dapr-func-aca-totals-wus.png) |
+
+> To be sure to have no regional deployment effects, I deployed and tested in 2 regions.
 
 Looking on the time dimension one can see that Functions on ACA has a wider spread of durations - even processing faster than Dapr at some points:
 
-![comparing runtimes over time in October](../images/2023-10-dapr-func-aca-time.png)
+![comparing runtimes over time in October](../images/2023-10-dapr-func-aca-time-weu.png)
 
 I am sure, that throughput of all variants can be improved by investing more time in measuring and fine tuning. My approach was to see what I can get out of the environment with a feasible amount of effort.
 
