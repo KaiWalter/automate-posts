@@ -1,5 +1,5 @@
 {
-  "title": "Comparing Azure Functions vs Dapr on Azure Container Apps",
+  "title": "Comparing throughput of Azure Functions vs Dapr on Azure Container Apps",
   "description": "How do .NET Functions scale compared to ASP.NET services using Dapr for a message handling workload?",
   "tags": "azure, queues, scalability",
   "published": true,
