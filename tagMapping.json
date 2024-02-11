@@ -7,6 +7,10 @@
       "name": "Azure"
     }
   },
+  "dapr": {
+    "devto": "dapr",
+    "opsio": "dapr"
+  },
   "devops": {
     "devto": "devops",
     "opsio": "devops"

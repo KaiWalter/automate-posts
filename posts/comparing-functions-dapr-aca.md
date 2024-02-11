@@ -11,7 +11,7 @@ In this post I show
 
 _jump to [results](#results)_
 
-> Although the [sample repo](https://github.com/KaiWalter/message-distribution/tree/v1.0) additional to **Bash/Azure CLI** contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
+> Although the [sample repo](https://github.com/KaiWalter/message-distribution/tree/v1.0.1) additional to **Bash/Azure CLI** contains a deployment option with **Azure Developer CLI**, I never was able to sustain stable deployment with this option while Azure Functions on Container Apps was in preview.
 
 ## Motivation
 
@@ -23,7 +23,7 @@ With [another environment](https://customers.microsoft.com/en-us/story/133608973
 
 ## Solution Overview
 
-The test environment can be deployed from this [repo](https://github.com/KaiWalter/message-distribution/tree/v1.0) - `README.md` describes the steps required.
+The test environment can be deployed from this [repo](https://github.com/KaiWalter/message-distribution/tree/v1.0.1) - `README.md` describes the steps required.
 
 ### Approach
 
@@ -64,11 +64,11 @@ requests
 
 ... to see whether the platform / stack scales in an expected pattern, ...
 
-![Regular scaling of Functions container](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/2023-08-08-scaling-func.png?raw=true)
+![Regular scaling of Functions container](https://github.com/KaiWalter/message-distribution/blob/v1.0.1/media/2023-08-08-scaling-func.png?raw=true)
 
 ... which pointed me to a strange scaling lag for Azure Functions on ACA:
 
-![Lagged scaling for Functions on ACA](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/2023-08-08-scaling-acaf.png?raw=true)
+![Lagged scaling for Functions on ACA](https://github.com/KaiWalter/message-distribution/blob/v1.0.1/media/2023-08-08-scaling-acaf.png?raw=true)
 
 Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33):
 
@@ -83,7 +83,7 @@ When conducting the final battery of tests in October'23 this behavior was parti
 - each of the contestants has a `Dispatch` method which picks the payload for each order from the ingress queue, inspects it and puts it either on a queue for "Standard" or "Express" orders
 - then for these order types there is a separate `Receiver` function which finally processes the dispatched message
 
-![Solution overview showing main components](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/test-setup.png?raw=true)
+![Solution overview showing main components](https://github.com/KaiWalter/message-distribution/blob/v1.0.1/media/test-setup.png?raw=true)
 
 C# project names and queues use a consistent coding for each contestant:
 
@@ -269,7 +269,7 @@ For the Functions and Dapr Container App, a scaling rule can be set. For Functio
 
 A first batch of tests in August'23 revealed no substantial disparity between the stacks:
 
-![comparing runtimes in August](https://github.com/KaiWalter/message-distribution/blob/v1.0/media/2023-08-08-results.png?raw=true)
+![comparing runtimes in August](https://github.com/KaiWalter/message-distribution/blob/v1.0.1/media/2023-08-08-results.png?raw=true)
 
 To capture the final results in October'23, I ...
 
@@ -278,8 +278,8 @@ To capture the final results in October'23, I ...
 
 After these upgrades and probably backend rework done by Microsoft now a much clearer spread of average durations can be seen: Dapr is obviously handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
 
-| West Europe | West US |
-| ---- | ---- |
+| West Europe                                                                                           | West US                                                                                        |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | ![comparing total runtimes in October in West Europe](../images/2023-10-dapr-func-aca-totals-weu.png) | ![comparing total runtimes in October West US](../images/2023-10-dapr-func-aca-totals-wus.png) |
 
 > To be sure to have no regional deployment effects, I deployed and tested in 2 regions.
@@ -371,7 +371,7 @@ resource acafunction 'Microsoft.Web/sites@2022-09-01' = {
 
 When hosting ASP.NET with Dapr on Container Apps, `cloud_RoleName` and `cloud_RoleInstance` are not populated - which I needed to evaluate how many instances / replicas are scaled.
 
-[AppInsightsTelemetryInitializer.cs](https://github.com/KaiWalter/message-distribution/blob/v1.0/src/daprdistributor/AppInsightsTelemetryInitializer.cs):
+[AppInsightsTelemetryInitializer.cs](https://github.com/KaiWalter/message-distribution/blob/v1.0.1/src/daprdistributor/AppInsightsTelemetryInitializer.cs):
 
 ```csharp
 using Microsoft.ApplicationInsights.Channel;
