@@ -437,11 +437,11 @@ app.MapPost($"/q-order-ingress-{testCase}-pubsub", async (
 
 Even with having 2 cycles faster then 40s, still there are outliers which take 60-70s. Which in turn results in this average:
 
-| implementation                         | average, 5 cycles | standard deviation |
-| -------------------------------------- | ----------------: | -----------------: |
-| Dapr input bindings, before conversion |             48.6s |               6.2s |
-| Dapr single pubsub                     |            103.4s |               7.5s |
-| Dapr bulk pubsub, message count 100    |             57.6s |              19.2s |
+| implementation      | maxMessagesCount | average, 5 cycles | standard deviation |
+| ------------------- | ---------------: | ----------------: | -----------------: |
+| Dapr input bindings |             n.a. |             48.6s |               6.2s |
+| Dapr single pubsub  |             n.a. |            103.4s |               7.5s |
+| Dapr bulk pubsub    |              100 |             57.6s |              19.2s |
 
 ### Crank It Up
 
@@ -529,12 +529,12 @@ dependencies
 
 Not quite, but close.
 
-| implementation                         | average, 5 cycles | standard deviation |
-| -------------------------------------- | ----------------: | -----------------: |
-| Dapr input bindings, before conversion |             48.6s |               6.2s |
-| Dapr single pubsub                     |            103.4s |               7.5s |
-| Dapr bulk pubsub, message count 100    |             57.6s |              19.2s |
-| Dapr bulk pubsub, message count 250    |             42.8s |              13.1s |
+| implementation      | maxMessagesCount | average, 5 cycles | standard deviation |
+| ------------------- | ---------------: | ----------------: | -----------------: |
+| Dapr input bindings |             n.a. |             48.6s |               6.2s |
+| Dapr single pubsub  |             n.a. |            103.4s |               7.5s |
+| Dapr bulk pubsub    |              100 |             57.6s |              19.2s |
+| Dapr bulk pubsub    |              250 |             42.8s |              13.1s |
 
 Still for the slow test cycles there is a gap until all records are processed:
 
@@ -618,13 +618,15 @@ Changing this setting did not make the warning completely go away. As Alessandro
 
 However as results show: the better noise and congestion is reduced in the environment, the better and more reliable the throughput.
 
-| implementation                                              | average, 5 cycles | standard deviation |
-| ----------------------------------------------------------- | ----------------: | -----------------: |
-| Dapr input bindings, before conversion                      |             48.6s |               6.2s |
-| Dapr single pubsub                                          |            103.4s |               7.5s |
-| Dapr bulk pubsub, message count 100                         |             57.6s |              19.2s |
-| Dapr bulk pubsub, message count 250, maxActiveMessages 1000 |             42.8s |              13.1s |
-| Dapr bulk pubsub, message count 250, maxActiveMessages 250  |             28.0s |               3.6s |
+| implementation      | maxMessagesCount | maxActiveMessages | maxConcurrentHandlers | average, 5 cycles | standard deviation |
+| ------------------- | ---------------: | ----------------: | --------------------: | ----------------: | -----------------: |
+| Dapr input bindings |             n.a. |              1000 |                     8 |             48.6s |               6.2s |
+| Dapr single pubsub  |             n.a. |              1000 |                     8 |            103.4s |               7.5s |
+| Dapr bulk pubsub    |              100 |              1000 |                     1 |             57.6s |              19.2s |
+| Dapr bulk pubsub    |              250 |              1000 |                     1 |             42.8s |              13.1s |
+| Dapr bulk pubsub    |              250 |               250 |                     1 |             28.0s |               3.6s |
+
+> Disclaimer: This combination of configuration values is just tuned for this particular scenario. With this post I just want to show, what to consider, what to look out for and where to calibrate.
 
 ## Conclusion
 
