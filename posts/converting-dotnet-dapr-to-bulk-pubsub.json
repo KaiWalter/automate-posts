@@ -1,7 +1,7 @@
 {
   "title": "How to tune Dapr bulk publish/subscribe for maximum throughput",
   "description": "See how a .NET/Dapr application's performance suffers and improves when migrating from Azure Service Bus input bindings to bulk pub/sub.",
-  "tags": "azure, queues, scalability, dapr",
+  "tags": "azure, scalability, dapr, dotnet, csharp",
   "published": true,
   "content": "posts/converting-dotnet-dapr-to-bulk-pubsub.md",
   "banner100x42": "images/walk-2023-12-100x42.png",

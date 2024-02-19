@@ -57,6 +57,12 @@
     "devto": "windows",
     "opsio": "windows"
   },
+  "csharp": {
+    "opsio": "csharp"
+  },
+  "dotnet": {
+    "devto": "dotnet"
+  },
   "vscode": {
     "devto": "vscode",
     "hashnode": {
