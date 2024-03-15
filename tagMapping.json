@@ -69,5 +69,12 @@
       "_id": "57ea5d6ee40cc4ca39a410bf",
       "name": "Visual Studio Code"
     }
+  },
+  "webassembly": {
+    "devto": "webassembly"
+  },
+  "kubernetes": {
+    "devto": "kubernetes",
+    "opsio": "kubernetes"
   }
 }

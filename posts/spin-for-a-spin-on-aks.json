@@ -1,0 +1,20 @@
+{
+  "title": "Taking Spin for a spin on AKS",
+  "description": "How to already leverage WebAssembly with SpinKube on AKS (or any Kubernetes) for faster scaling and higher density.",
+  "tags": "azure, scalability, webassembly, kubernetes",
+  "published": false,
+  "content": "posts/spin-for-a-spin-on-aks.md",
+  "banner100x42": "images/rodstein-100x42.jpg",
+  "replacements": {
+    "opsio": [
+      {
+        "search": "https://dev.to/kaiwalter/comparing-azure-functions-vs-dapr-on-azure-container-apps-2noh",
+        "replace": "https://community.ops.io/kaiwalter/comparing-azure-functions-vs-dapr-on-azure-container-apps-37ll"
+      },
+      {
+        "search": "https://dev.to/kaiwalter/how-to-tune-dapr-bulk-publishsubscribe-for-maximum-throughput-40dd",
+        "replace": "https://community.ops.io/kaiwalter/how-to-tune-dapr-bulk-publishsubscribe-for-maximum-throughput-3pkl"
+      }
+    ]
+  }
+}
