@@ -2,7 +2,7 @@
   "title": "Taking Spin for a spin on AKS",
   "description": "How to already leverage WebAssembly with SpinKube on AKS (or any Kubernetes) for faster scaling and higher density.",
   "tags": "azure, scalability, webassembly, kubernetes",
-  "published": false,
+  "published": true,
   "content": "posts/spin-for-a-spin-on-aks.md",
   "banner100x42": "images/rodstein-100x42.jpg",
   "replacements": {
