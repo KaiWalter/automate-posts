@@ -1,12 +1,12 @@
 ## TL;DR
 
-In this post I want to illustrate, whether a WebAssembly (aka Wasm) framework like [Spin](https://github.com/fermyon/spin) can already be utlized on Kubernetes in coexistency with existing workloads using [SpinKube](https://www.spinkube.dev/).
+In this post I want to illustrate, whether a WebAssembly (aka Wasm) framework like [Spin](https://github.com/fermyon/spin) can already be utilized on Kubernetes in coexistency with existing workloads using [SpinKube](https://www.spinkube.dev/).
 
 ## Motivation
 
 In recent posts - [Comparing Azure Functions vs Dapr throughput on Azure Container Apps](https://dev.to/kaiwalter/comparing-azure-functions-vs-dapr-on-azure-container-apps-2noh) and [How to tune Dapr bulk publish/subscribe for maximum throughput](https://dev.to/kaiwalter/how-to-tune-dapr-bulk-publishsubscribe-for-maximum-throughput-40dd) - I compared throughput of the same asynchronous message distribution scenario with various flavors of .NET deployments (Dapr, Functions) on Azure Container Apps.
 
-Observing the space of Wasm on the back end now for a while, I was wondering whether the same scenario already could be achieved and which of the suggested benefits are in reach to be leveraged. Those benefits being faster scalability and higher density as compiling [WASI](https://github.com/Wasm/WASI)-compatible code into a Wasm module potentially produces\* a smaller artifact then regular OCI containers (still containing fragments of an OS even in the smallest `distroless` variants).
+Observing the space of Wasm on the back end now for a while, I was wondering whether the same scenario already could be achieved and which of the suggested benefits are in reach to be leveraged. Those benefits being faster scalability and higher density as compiling [WASI](https://github.com/Wasm/WASI)-compatible code into a Wasm module potentially produces a smaller artifact then regular OCI containers (still containing fragments of an OS even in the smallest `distroless` variants).
 
 > We explored the capabitlies in a team - hence in this post from now on I use **we** and **our**.
 
@@ -16,7 +16,7 @@ As the Wasm ecosystem for our kind of usage is still ramping up and not all capa
 
 In our environment many of the enterprise-ish workloads are hosted on Kubernetes. To get Kubernetes or rather `containerd` executing Wasm, a so called [containerd Wasm Shim](https://github.com/deislabs/containerd-wasm-shims?tab=readme-ov-file#shims) is required which itself utilizes [RunWasi](https://github.com/containerd/runwasi).
 
-### Programm Languages
+### Programming Languages
 
 To be more flexible regarding the programming languages available for such a test scenario and to have a good-enough **developer-inner-loop** experience, we turned to [Spin](https://github.com/fermyon/spin). Of the [languages available](https://github.com/fermyon/spin?tab=readme-ov-file#language-support-for-spin-features) we used **Rust** to get a feeling for maximum scaling & density capabitlies and **TypeScipt/Node.js** to see behavior with a more runtime-heavy environment - as our prefered choice **.NET** in spring 2024 was not yet supporting a setup like that good enough.
 
@@ -26,7 +26,7 @@ Currently Spin does not feature all [triggers and APIs](https://github.com/fermy
 
 ### Dapr Shared
 
-When deploying Spin runtime with regular Kubernetes primitives like deployment/service/..., Dapr obviously can be leveraged in its default sidecar mode. Ultimate density with Spin is reached by getting some of this primitives out of the way - hence SpinKube with its own [Spin Operator](https://github.com/spinkube/spin-operator). That on the other hand denies using Dapr sidecar. [Dapr Shared](https://github.com/dapr-sandbox/dapr-shared) provides Dapr being hosted in a Kubernetes daemonset or deployment which additionally enables a higher cardinality of Dapr vs (Spin) App: sidecar is a 1:1 relation while with Dapr Shared a 1:n relation can be achieved - contributing further to the higher density capabitlies that Wasm itself offers.
+When deploying Spin runtime with regular Kubernetes primitives like deployment/service/..., Dapr obviously can be leveraged in its default sidecar mode. Ultimate density with Spin is reached by getting some of this primitives out of the way - hence SpinKube with its own [SpinOperator](https://github.com/spinkube/spin-operator). As SpinOperator does not support injecting side-cars yet, [Dapr Shared](https://github.com/dapr-sandbox/dapr-shared) is used, which provides Dapr being hosted in a Kubernetes daemonset or deployment. That additionally enables a higher cardinality of Dapr vs (Spin) App: sidecar is a 1:1 relation while with Dapr Shared a 1:n relation can be achieved - contributing further to the higher density capabitlies that Wasm itself offers.
 
 ### Test Flow
 
