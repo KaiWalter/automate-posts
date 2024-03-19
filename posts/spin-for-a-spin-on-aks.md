@@ -62,7 +62,7 @@ Detailed setup and code can be found in [this repository](https://github.com/ZEI
 
 ## Conclusion
 
-The observations stated here shall be considered **preliminary**. There is still a lot of movement in that space. Adding further capabilities into Wasm modules like observability or improving runtime compatibility may result in absorbing some of the desnity advantages or performance advantages Wasm modules currently seem to have. Gains like cutting down on multi-platform builds and image retention already speak for Wasm on the back end. Tooling (although Spin and its Fermyon Cloud ecosystem is a fantastic closed loop offering for Wasm modules), developer inner and outer loop definitely need to mature before Wasm can be fully exploited for enterprise workloads and compete to the current main stream stacks.
+The observations stated here shall be considered **preliminary**. There is still a lot of movement in that space. Adding further capabilities into Wasm modules like observability or improving runtime compatibility may result in absorbing some of the density or performance advantages Wasm modules currently here show to have. Gains like cutting down on multi-platform builds and image retention already speak for Wasm on the back end. Tooling (although Spin and its Fermyon Cloud ecosystem is a fantastic closed loop offering for Wasm modules), developer inner and outer loop definitely need to mature before Wasm can be fully exploited for enterprise workloads and compete to the current main stream stacks.
 
 ---
 
