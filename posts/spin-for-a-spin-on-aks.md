@@ -22,7 +22,7 @@ To be more flexible regarding the programming languages available for such a tes
 
 ### Cloud Resources
 
-Currently Spin does not feature all [triggers and APIs](https://github.com/fermyon/spin?tab=readme-ov-file#language-support-for-spin-features) required to get to a comparable environment as in my previous posts, we leveraged [Dapr](https://dapr.io/) to connect the **Spin** application with cloud resources using **HTTP trigger** and **Outbound HTTP API**.
+Currently Spin does not feature all [triggers and APIs](https://github.com/fermyon/spin?tab=readme-ov-file#language-support-for-spin-features) required to get to a comparable environment as in my previous posts, so we leveraged [Dapr](https://dapr.io/) to connect the **Spin** application with cloud resources using **HTTP trigger** and **Outbound HTTP API**.
 
 ### Dapr Shared
 

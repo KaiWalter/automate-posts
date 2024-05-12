@@ -27,17 +27,17 @@ The test environment can be deployed from this [repo](https://github.com/KaiWalt
 
 ### Approach
 
-To come to a viable comparision, I applied these aspects:
+To come to a viable comparison, I applied these aspects:
 
 - logic for all contenders is written in **C# / .NET 7**
 - all contenders need to process the **exact same volume** and structure of payloads - which is generated once and then sent to them for processing
 - test payload (10k messages by default) is send on a queue and **scheduled to exactly the same time** to force the stack, to deal with the amount at once
 - both Functions variants are based on **.NET isolated worker**, as Functions on Container Apps only support this model
-- all 3 variantes run staggered, not at the same time, on the same Container Apps environment, hence same region, same nodes, same resources ...
+- all 3 variants run staggered, not at the same time, on the same Container Apps environment, hence same region, same nodes, same resources ...
 
 ### Limitations
 
-- Only **Service Bus queues** are tested. Of course, a scenario like this can also be achieved with pub/sub Service Bus **topics** and subscriptions. However in our enterprise workloads, where we apply this pattern, we work with queues as these allow a dedicated dead-lettering at each stage of the process - compared to topics, where moving messages from _dead-letter_ to _active_ results in all subscribers (if not explicitly filtered) receivng these messsages again.
+- Only **Service Bus queues** are tested. Of course, a scenario like this can also be achieved with pub/sub Service Bus **topics** and subscriptions. However in our enterprise workloads, where we apply this pattern, we work with queues as these allow a dedicated dead-lettering at each stage of the process - compared to topics, where moving messages from _dead-letter_ to _active_ results in all subscribers (if not explicitly filtered) receivng these messages again.
 - Currently not all capabilities of the contesting stacks - like Dapr bulk message processing - are maxed out. Hence there is obviously still some potential for improving individual throughput.
 
 ### Measuring Throughput
@@ -72,7 +72,7 @@ requests
 
 Microsoft Product Group looked into this observation and provided an explanation in this [GitHub issue](https://github.com/Azure/azure-functions-on-container-apps/issues/33):
 
-> "Initially, some default numbers of nodes are allocated for any ACA environment. During scaling, ACA uses these nodes to create app instances. For container apps scaling, the default number of nodes are sufficient as it uses less cpu, memory per instance. For function apps scaling, the default number of nodes is not sufficient and thus, ACA environment requests more nodes in backend. After new nodes are available to ACA environment, it uses them to create remaining instances for Function app. It takes some time to fetch new nodes and create remaining instances, therefore, we see a gap in processing between both deployments."
+> "Initially, some default numbers of nodes are allocated for any ACA environment. During scaling, ACA uses these nodes to create app instances. For container apps scaling, the default number of nodes are sufficient as it uses less cpu, memory per instance. For function apps scaling, the default number of nodes is not sufficient and thus, ACA environment requests more nodes in back end. After new nodes are available to ACA environment, it uses them to create remaining instances for Function app. It takes some time to fetch new nodes and create remaining instances, therefore, we see a gap in processing between both deployments."
 
 When conducting the final battery of tests in October'23 this behavior was partially gone (see results below) when sufficient Functions relevant nodes already had been scaled.
 
@@ -276,7 +276,7 @@ To capture the final results in October'23, I ...
 - upgraded dependencies of the .NET projects (e.g. to Dapr 1.11)
 - switched from Azure Service Bus Standard Tier to Premium because of that throttling issue explained below, which imho gave the whole scenario a major boost
 
-After these upgrades and probably backend rework done by Microsoft now a much clearer spread of average durations can be seen: Dapr is obviously handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
+After these upgrades and probably back-end rework done by Microsoft now a much clearer spread of average duration can be seen: Dapr is obviously handling the processing faster than Functions in Container on ACA and then (currently) Functions on ACA shows the worst performance in average:
 
 | West Europe                                                                                           | West US                                                                                        |
 | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -294,7 +294,7 @@ I am sure, that throughput of all variants can be improved by investing more tim
 
 ## Nuggets and Gotchas
 
-Appart from the plain throughput evaluation above, I want to add the issues I stumbled over along the way - I guess this is the real "meat" of this post:
+Apart from the plain throughput evaluation above, I want to add the issues I stumbled over along the way - I guess this is the real "meat" of this post:
 
 ### Deploying Container Apps with no App yet built
 
