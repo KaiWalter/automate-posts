@@ -123,6 +123,8 @@ This files defines
 ```
 #cloud-config
 package_upgrade: true
+apt_sources:
+- source: "ppa:zhangsongcui3371/fastfetch"
 packages:
 - apt-transport-https
 - ca-certificates
@@ -140,6 +142,7 @@ packages:
 - dos2unix
 - fzf
 - ripgrep
+- fastfetch
 write_files:
   - path: /tmp/install-stage1.sh
     content: |
