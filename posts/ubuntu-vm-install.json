@@ -1,0 +1,20 @@
+{
+  "title": "Automating Azure VM Ubuntu install without fancy tools",
+  "description": "A collection of learnings and gadgets when trying to automate Ubuntu on Azure VM installation with only using basic tools.",
+  "tags": "azure, productivity",
+  "published": true,
+  "content": "posts/ubuntu-vm-install.md",
+  "banner100x42": "images/vai-beach-2024-100x42.png",
+  "replacements": {
+    "opsio": [
+      {
+        "search": "https://dev.to/kaiwalter/create-a-disposable-azure-vm-based-on-cbl-mariner-2013",
+        "replace": "https://community.ops.io/kaiwalter/create-a-disposable-azure-vm-based-on-cbl-mariner-2ic6"
+      },
+      {
+        "search": "https://dev.to/kaiwalter/azure-vm-based-on-cbl-mariner-with-nix-package-manager-243f",
+        "replace": "https://community.ops.io/kaiwalter/azure-vm-based-on-cbl-mariner-with-nix-package-manager-56ao"
+      }
+    ]
+  }
+}
