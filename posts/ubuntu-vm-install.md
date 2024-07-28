@@ -77,8 +77,17 @@ az vm create -n $VMNAME -g $VMNAME \
 az vm auto-shutdown -n $VMNAME -g $VMNAME \
   --time "22:00"
 
-sed -i '' "s/$VMNAME.*//" ~/.ssh/known_hosts
-sed -i '' '/^$/d' ~/.ssh/known_hosts
+case "$OSTYPE" in
+  darwin*|bsd*)
+    sed_no_backup=( -i "''" )
+    ;;
+  *)
+    sed_no_backup=( -i )
+    ;;
+esac
+
+sed ${sed_no_backup[@]} "s/$VMNAME.*//" ~/.ssh/known_hosts
+sed ${sed_no_backup[@]} "/^$/d" ~/.ssh/known_hosts
 ```
 
 #### Azure Storage Account Name
@@ -106,11 +115,20 @@ PUBKEY=`op read "op://Private/$PUBKEYNAME/public key"`
 
 In case that VM name had been used before and was signed in to with SSH, these statements remove the previous entries and potential resulting empty lines.
 
-> The variance of `sed` works on MacOS, probably with BSD and might need to be adjusted for Linux.
+> `sed` swicthing is based on [this StackOverflow answer](https://stackoverflow.com/a/4247319/4947644)
 
 ```
-sed -i '' "s/$VMNAME.*//" ~/.ssh/known_hosts
-sed -i '' '/^$/d' ~/.ssh/known_hosts
+case "$OSTYPE" in
+  darwin*|bsd*)
+    sed_no_backup=( -i "''" )
+    ;;
+  *)
+    sed_no_backup=( -i )
+    ;;
+esac
+
+sed ${sed_no_backup[@]} "s/$VMNAME.*//" ~/.ssh/known_hosts
+sed ${sed_no_backup[@]} "/^$/d" ~/.ssh/known_hosts
 ```
 
 ### cloud-init.txt
