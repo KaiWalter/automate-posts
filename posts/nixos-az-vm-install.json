@@ -1,0 +1,24 @@
+{
+  "title": "Inject NixOS into an Azure VM with nixos-anywhere and Azure Container Intances",
+  "description": "How to get NixOS running on an Azure VM without the need for an VM image.",
+  "tags": "azure, productivity",
+  "published": true,
+  "content": "posts/nixos-az-vm-install.md",
+  "banner100x42": "images/haertsfeld-2024-100x42.png",
+  "replacements": {
+    "opsio": [
+      {
+        "search": "https://dev.to/kaiwalter/azure-vm-based-on-cbl-mariner-with-nix-package-manager-243f",
+        "replace": "https://community.ops.io/kaiwalter/azure-vm-based-on-cbl-mariner-with-nix-package-manager-56ao"
+      },
+      {
+        "search": "https://dev.to/kaiwalter/creating-a-certificate-authority-for-testing-with-azure-container-instances-5bnp",
+        "replace": "https://community.ops.io/kaiwalter/creating-a-certificate-authority-for-testing-with-azure-container-instances-27ch"
+      },
+      {
+        "search": "https://dev.to/kaiwalter/handling-an-acme-challenge-response-with-a-temporary-azure-container-instance-3ae0",
+        "replace": "https://community.ops.io/kaiwalter/handling-an-acme-challenge-response-with-a-temporary-azure-container-instance-2f2d"
+      }
+    ]
+  }
+}
