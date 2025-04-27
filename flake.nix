@@ -18,8 +18,16 @@
 
     forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
 
-    pkgsFor = system: import nixpkgs {inherit system;};
-    pkgsUnstableFor = system: import nixpkgs-unstable {inherit system;};
+    pkgsFor = system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    pkgsUnstableFor = system:
+      import nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
   in {
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
     devShell = forAllSystems (
@@ -33,7 +41,7 @@
           ];
 
           shellHook = ''
-            exec pwsh -NoLogo
+            exec pwsh -NoLogo -NoExit -Command ". ./profile.ps1"
           '';
         }
     );
