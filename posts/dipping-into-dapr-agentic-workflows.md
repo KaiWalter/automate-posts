@@ -14,12 +14,12 @@ _I am out, mostly in the mornings for a walk or run, and I just want to drop a t
 
 Finally with [n8n](https://n8n.io) I pushed myself into a working flow with a highly curated environment. I dropped that idea of developing the flow on my own as the value of having such a flow outweighed the learning experience.
 
-![Original N8N flow downloading, transcribing and spawning actions on a voice recording](../images/dapr-agents-original-n8n-flow.png)
+![Original n8n flow downloading, transcribing and spawning actions on a voice recording](../images/dapr-agents-original-n8n-flow.png)
 
 How it works:
 
 - on my Android phone I use the paid version of _Easy Voice Recorder Pro_ which allows to automatically upload into a predefined _OneDrive_ folder (which is `/Apps/Easy Voice Recorder Pro`)
-- the recording is downloaded by the N8N flow on a trigger, when a file is created in that folder
+- the recording is downloaded by the n8n flow on a trigger, when a file is created in that folder
 - before downloading, to be safe and not crash the transcription unnecessarily, the flow filters on `audio/x-wav` or `audio/mpeg` MIME types
 - additionally the flow downloads a prompt text file from OneDrive which contains the instructions for classifying the intent in the transcription; I wanted to be on OneDrive, so I can modify it easily without having to touch the flow
 - then transcribe using OpenAI Whisper API
@@ -28,9 +28,9 @@ How it works:
 - based on the intent resolved then either create a task (using a webhook, as I did not want to mess around in our corporate environment) or just send an email to my corporate-self with the plain transcription
 - of course also housekeeping: copy (as moving was not supported) the file to a archive folder and delete the original file
 
-That works pretty well. I especially liked the capability of N8N to copy runtime data of a certain execution into the editor, which makes mapping and debugging so much easier. I moved the cloud based flow so I could run it basically for free (download it, import it from file, rewire cloud credentials).
+That works pretty well. I especially liked the capability of n8n to copy runtime data of a certain execution into the editor, which makes mapping and debugging so much easier. I moved the cloud based flow so I could run it basically for free (download it, import it from file, rewire cloud credentials).
 
-Enough of N8N. A nice environment to get started quickly - without a doubt.
+Enough of n8n. A nice environment to get started quickly - without a doubt.
 
 ## Value proposition of Dapr Agents and Workflows for me
 
@@ -44,7 +44,7 @@ This is what me got spending factor 3-4 more time into a Dapr based flow:
 
 ## What I wanted to do differently
 
-As seen above I implemented a rather deterministic flow with N8N. I wanted to explore how I can use Dapr agents and workflows to create a more agentic workflow, which is more flexible and can adapt to the situation at hand - making scaling up and bringing in new components more easy. In essence this means:
+As seen above I implemented a rather deterministic flow with n8n. I wanted to explore how I can use Dapr agents and workflows to create a more agentic workflow, which is more flexible and can adapt to the situation at hand - making scaling up and bringing in new components more easy. In essence this means:
 
 1. polling on OneDrive, downloading and transcribing the voice recording runs in a deterministic workflow
 2. transcript is then handed to LLM-orchestrated agents which have instructions to figure out what to do with the transcription
@@ -110,7 +110,7 @@ This script helps me to start the process with a clean state which makes debuggi
 
 Some other points I'd like to convey:
 
-- compared to the N8N flow, where one prompt yielded a structured intent and classification, it took some calibration on my end to balance out instructions handed to the orchestrator and the agents
+- compared to the n8n flow, where one prompt yielded a structured intent and classification, it took some calibration on my end to balance out instructions handed to the orchestrator and the agents
 - when refactoring agents, especially renaming or deleting them, be sure to flush or clean up the agent state store; otherwise orchestrator will still try to involve orphaned agents
 - closely and repeatedly observe conversation flow to see where instructions need to be more precise or where the agent needs to be more capable
 - when passing file paths in task message, wrap it in something like square brackets - just separating with a blank from regular instructions caused that file path sometimes could not be resolved correctly
