@@ -7,6 +7,15 @@
       "name": "Azure"
     }
   },
+  "ai": {
+    "devto": "ai"
+  },
+  "agent": {
+    "devto": "agent"
+  },
+  "workflow": {
+    "devto": "workflow"
+  },
   "dapr": {
     "devto": "dapr",
     "opsio": "dapr"

@@ -1,0 +1,10 @@
+{
+  "title": "Dipping into Dapr Agentic Workflows",
+  "description": "Some learnings when trying to get an N8N flow to work with Dapr and Agentic Workflows.",
+  "tags": "dapr, ai, agent, workflow",
+  "published": false,
+  "content": "posts/dipping-into-dapr-agentic-workflows.md",
+  "banner100x42": "images/2025-06-tux-100x42.png",
+  "replacements": {},
+  "devOnly": true
+}

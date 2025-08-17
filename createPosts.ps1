@@ -76,14 +76,16 @@ $devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
   -published $postDefinition.published `
   -headers $devtoHeaders
 
-$tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
-$opsioResponse = Update-Forum -baseUrl "https://community.ops.io/api/articles"`
-  -postBody $postOpsIoContent `
-  -title $title `
-  -coverImageUrl $coverImageUrl `
-  -tags $tags `
-  -published $postDefinition.published `
-  -headers $opsioHeaders
+  if(!$postDefinition.devOnly) {
+    $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
+      $opsioResponse = Update-Forum -baseUrl "https://community.ops.io/api/articles"`
+      -postBody $postOpsIoContent `
+      -title $title `
+      -coverImageUrl $coverImageUrl `
+      -tags $tags `
+      -published $postDefinition.published `
+      -headers $opsioHeaders
+  }
 
 # if ($postDefinition.published) {
 #
