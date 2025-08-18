@@ -12,7 +12,7 @@ Nothing really stuck with me. The challenge I wanted to solve:
 
 _I am out, mostly in the mornings for a walk or run, and I just want to drop a thought or a task immediately. Sometimes even complete sections of an upcoming presentation. Or rushing between meeting, the same: Just drop a voice recording and have it turned into a task or just as a note into my email inbox._
 
-Finally with [n8n](https://n8n.io) I pushed myself into a working flow with a highly curated environment. I dropped that idea of developing the flow on my own as the value of having such a flow outweighed the learning experience.
+Finally, with [n8n](https://n8n.io) I pushed myself into a working flow with a highly curated environment. I dropped that idea of developing the flow on my own for that moment, as the value of having such a flow outweighed the learning experience.
 
 ![Original n8n flow downloading, transcribing and spawning actions on a voice recording](../images/dapr-agents-original-n8n-flow.png)
 
@@ -21,14 +21,14 @@ How it works:
 - on my Android phone I use the paid version of _Easy Voice Recorder Pro_ which allows to automatically upload into a predefined _OneDrive_ folder (which is `/Apps/Easy Voice Recorder Pro`)
 - the recording is downloaded by the n8n flow on a trigger, when a file is created in that folder
 - before downloading, to be safe and not crash the transcription unnecessarily, the flow filters on `audio/x-wav` or `audio/mpeg` MIME types
-- additionally the flow downloads a prompt text file from OneDrive which contains the instructions for classifying the intent in the transcription; I wanted to be on OneDrive, so I can modify it easily without having to touch the flow
+- additionally, the flow downloads a prompt text file from OneDrive which contains the instructions for classifying the intent in the transcription; I wanted to be on OneDrive, so I can modify it easily without having to touch the flow
 - then transcribe using OpenAI Whisper API
 - with the transcription and the prompt run through a model like `GPT-4.1-MINI`
 - that classification step also has access to a simple tool - referenced in the prompt: a list of relevant person and other entity names to make the transcription more precise
 - based on the intent resolved then either create a task (using a webhook, as I did not want to mess around in our corporate environment) or just send an email to my corporate-self with the plain transcription
-- of course also housekeeping: copy (as moving was not supported) the file to a archive folder and delete the original file
+- as part of housekeeping, copy the file to an archive folder and delete the original
 
-That works pretty well. I especially liked the capability of n8n to copy runtime data of a certain execution into the editor, which makes mapping and debugging so much easier. I moved the cloud based flow so I could run it basically for free (download it, import it from file, rewire cloud credentials).
+That worked pretty well. I especially liked the capability of n8n to copy runtime data of a particular execution into the editor, which makes mapping and debugging so much easier. I moved the cloud-based flow so I could run it basically for free (download it, import it from file, rewire cloud credentials).
 
 Enough of n8n. A nice environment to get started quickly - without a doubt.
 
@@ -44,7 +44,7 @@ This is what me got spending factor 3-4 more time into a Dapr based flow:
 
 ## What I wanted to do differently
 
-As seen above I implemented a rather deterministic flow with n8n. I wanted to explore how I can use Dapr agents and workflows to create a more agentic workflow, which is more flexible and can adapt to the situation at hand - making scaling up and bringing in new components more easy. In essence this means:
+As seen above I implemented a rather deterministic flow with n8n. I wanted to explore how I can use Dapr agents and workflows to create a more agentic workflow, which is more flexible and can adapt to the situation at hand - making scaling up and bringing in new components easier. In essence this means:
 
 1. polling on OneDrive, downloading and transcribing the voice recording runs in a deterministic workflow
 2. transcript is then handed to LLM-orchestrated agents which have instructions to figure out what to do with the transcription
@@ -57,7 +57,7 @@ As seen above I implemented a rather deterministic flow with n8n. I wanted to ex
 The code can be found in my [GitHub repository](https://github.com/KaiWalter/dapr-agent-flow).
 
 > BIG FAT DISCLAIMER: This is a work in progress, I am still learning and exploring the capabilities of Dapr agents and workflows. The code is not production-ready and should be used for educational purposes only.<br/>
-> DISCLAIMER: Almost 95% of the code has been created with GitHub Copilot. I made this project into a "two birds, one stone" exercise as I was keen to created a larger codebase with AI support for a long time. I will share and link here learnings on my "me and my coding apprentice" journey some time in the future. Let's just say: For me as an occasional coder, not versed in Python really, it would not have been possible to achieve that amount of [function points](https://en.wikipedia.org/wiki/Function_point), a measure we kids used some decades ago to measure the size of a software project, without AI support.
+> DISCLAIMER: Almost 95% of the code has been created with GitHub Copilot. I made this project into a "two birds, one stone" exercise as I was keen to created a larger codebase with AI support for a long time. I will share and link here learnings on my "me and my coding apprentice" journey sometime in the future. Let's just say: For me as an occasional coder, not versed in Python really, it would not have been possible to achieve that amount of [function points](https://en.wikipedia.org/wiki/Function_point), a measure we kids used some decades ago to measure the size of a software project, without AI support.
 
 ### Top Level / Tier 1 Structure
 
@@ -98,7 +98,7 @@ Folder **models** contains common model definitions used by the workflow element
 
 ### PRD / requirements
 
-As stated above, I drove **GitHub Copilot** for the majority of work. For that, most of the time, when not falling back into old habits, I used **voice2action-requirements.md** PRD file to invoke feature implementation. So most of my intentions I had with the flow are also documented there.
+As stated above, I drove **GitHub Copilot** for the majority of work. For that, most of the time, when not falling back into old habits, I used **voice2action-requirements.md** PRD file to invoke feature implementation. So, most of my intentions I had with the flow are also documented there.
 
 ### start.sh
 
@@ -111,7 +111,7 @@ This script helps me to start the process with a clean state which makes debuggi
 Some other points I'd like to convey:
 
 - compared to the n8n flow, where one prompt yielded a structured intent and classification, it took some calibration on my end to balance out instructions handed to the orchestrator and the agents
-- when refactoring agents, especially renaming or deleting them, be sure to flush or clean up the agent state store; otherwise orchestrator will still try to involve orphaned agents
+- when refactoring agents, especially renaming or deleting them, be sure to flush or clean up the agent state store; otherwise, orchestrator will still try to involve orphaned agents
 - closely and repeatedly observe conversation flow to see where instructions need to be more precise or where the agent needs to be more capable
 - when passing file paths in task message, wrap it in something like square brackets - just separating with a blank from regular instructions caused that file path sometimes could not be resolved correctly
 
@@ -128,6 +128,6 @@ Some other points I'd like to convey:
 
 ## Conclusion
 
-For me the **versatility of Dapr** for such scenarios seems tangible. One can combine deterministic with non-determistic workflows. I think particually this gives Dapr an edge.
+For me the **versatility of Dapr** for such scenarios seems tangible. One can combine deterministic with non-deterministic workflows. I think particularly this gives Dapr an edge.
 
 I need to operate it for a while. Add observability and surely more resilience. Also adding some more intents like "analyze this topic for me and send me a report" will show, whether my assumptions regarding scalability and flexibility hold up.
