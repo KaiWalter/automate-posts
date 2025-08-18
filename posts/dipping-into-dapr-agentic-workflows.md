@@ -54,7 +54,7 @@ As seen above I implemented a rather deterministic flow with n8n. I wanted to ex
 
 ## A look into the codebase
 
-The code can be found in my [GitHub repository](https://github.com/KaiWalter/dapr-agent-flow).
+The code can be found in my [GitHub repository](https://github.com/KaiWalter/dapr-agent-flow/tree/2025-08-post).
 
 > BIG FAT DISCLAIMER: This is a work in progress, I am still learning and exploring the capabilities of Dapr agents and workflows. The code is not production-ready and should be used for educational purposes only.<br/>
 > DISCLAIMER: Almost 95% of the code has been created with GitHub Copilot. I made this project into a "two birds, one stone" exercise as I was keen to created a larger codebase with AI support for a long time. I will share and link here learnings on my "me and my coding apprentice" journey sometime in the future. Let's just say: For me as an occasional coder, not versed in Python really, it would not have been possible to achieve that amount of [function points](https://en.wikipedia.org/wiki/Function_point), a measure we kids used some decades ago to measure the size of a software project, without AI support.
