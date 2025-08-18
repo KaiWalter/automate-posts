@@ -1,4 +1,4 @@
-function Update-Forum {
+function Update-Forem {
     [CmdletBinding()]
     param (
         $headers,

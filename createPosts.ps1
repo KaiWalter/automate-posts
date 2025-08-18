@@ -19,7 +19,7 @@ param (
 $ErrorActionPreference = "Stop"
 
 Import-Module ./Helpers.psm1
-Import-Module ./ForumApi.psm1
+Import-Module ./ForemApi.psm1
 Import-Module ./HashnodeApi.psm1
 
 # ----- INIT
@@ -68,7 +68,7 @@ $postHashnodeContent = Get-PlatformReplacements -postBody $postContent -replacem
 # ----- POST
 
 $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto"
-$devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
+$devtoResponse = Update-Forem  -baseUrl "https://dev.to/api/articles"`
   -postBody $postDevToContent `
   -title $title `
   -coverImageUrl $coverImageUrl `
@@ -78,7 +78,7 @@ $devtoResponse = Update-Forum  -baseUrl "https://dev.to/api/articles"`
 
   if(!$postDefinition.devOnly) {
     $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
-      $opsioResponse = Update-Forum -baseUrl "https://community.ops.io/api/articles"`
+      $opsioResponse = Update-Forem -baseUrl "https://community.ops.io/api/articles"`
       -postBody $postOpsIoContent `
       -title $title `
       -coverImageUrl $coverImageUrl `
