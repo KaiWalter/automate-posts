@@ -115,6 +115,11 @@ Some other points I'd like to convey:
 - closely and repeatedly observe conversation flow to see where instructions need to be more precise or where the agent needs to be more capable
 - when passing file paths in task message, wrap it in something like square brackets - just separating with a blank from regular instructions caused that file path sometimes could not be resolved correctly
 
+## Open Questions
+
+1. How do I handle validation errors when I send information from the conversation over to a tool and the tool expects a structure with a validation on top of it?
+2. Is it really that the LLM orchestrator can only process one instance at a time? Can I make it multi-instance with some unique ID or do I need to put some singleton pattern in front of it like an actor?
+
 ## Other Dapr related posts
 
 - [How to tune Dapr bulk publish/subscribe for maximum throughput](https://dev.to/kaiwalter/how-to-tune-dapr-bulk-publishsubscribe-for-maximum-throughput-40dd)
@@ -123,4 +128,6 @@ Some other points I'd like to convey:
 
 ## Conclusion
 
-For me the **versatility of Dapr** for such scenarios seems tangible. I now need to operate it for a while. Add observability and surely more resilience. Also adding some more intents like "analyze this topic for me and send me a report" will show, whether my assumptions regarding scalability and flexibility hold up.
+For me the **versatility of Dapr** for such scenarios seems tangible. One can combine deterministic with non-determistic workflows. I think particually this gives Dapr an edge.
+
+I need to operate it for a while. Add observability and surely more resilience. Also adding some more intents like "analyze this topic for me and send me a report" will show, whether my assumptions regarding scalability and flexibility hold up.
