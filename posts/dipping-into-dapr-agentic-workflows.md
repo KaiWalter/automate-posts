@@ -41,6 +41,7 @@ This is what me got spending factor 3-4 more time into a Dapr based flow:
 - with Dapr I get **observability** which I can hook easily into our environment
 - with Dapr I achieve the desired **separation of concerns** between the workflow and the agents; I can develop and deploy them independently
 - with Dapr I can **mix** in "classic" enterprise processing easily, I can mix languages among Dapr applications, e.g. Python for the agents and C# for the workflow
+- and in the end I get **scalability** with Dapr: it is **intrinsic** to Dapr that for deterministic and non-deterministic workflows activities can be operated on multiple computing nodes easily, something that other frameworks do not necessarily provide out of the box
 
 ## What I wanted to do differently
 
