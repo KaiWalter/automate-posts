@@ -71,21 +71,23 @@ $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "devto
 $devtoResponse = Update-Forem  -baseUrl "https://dev.to/api/articles"`
   -postBody $postDevToContent `
   -title $title `
+  -description $postDefinition.description `
   -coverImageUrl $coverImageUrl `
   -tags $tags `
   -published $postDefinition.published `
   -headers $devtoHeaders
 
-  if(!$postDefinition.devOnly) {
-    $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
-      $opsioResponse = Update-Forem -baseUrl "https://community.ops.io/api/articles"`
-      -postBody $postOpsIoContent `
-      -title $title `
-      -coverImageUrl $coverImageUrl `
-      -tags $tags `
-      -published $postDefinition.published `
-      -headers $opsioHeaders
-  }
+if(!$postDefinition.devOnly)
+{
+  $tags = Get-TagMapping -tagMapping $tagMapping -tags $selectedTags -forum "opsio"
+  $opsioResponse = Update-Forem -baseUrl "https://community.ops.io/api/articles"`
+    -postBody $postOpsIoContent `
+    -title $title `
+    -coverImageUrl $coverImageUrl `
+    -tags $tags `
+    -published $postDefinition.published `
+    -headers $opsioHeaders
+}
 
 # if ($postDefinition.published) {
 #
