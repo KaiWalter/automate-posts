@@ -82,6 +82,12 @@
   "webassembly": {
     "devto": "webassembly"
   },
+  "n8n": {
+    "devto": "n8n"
+  },
+  "automation": {
+    "devto": "automation"
+  },
   "kubernetes": {
     "devto": "kubernetes",
     "opsio": "kubernetes"

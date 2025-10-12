@@ -11,7 +11,7 @@ param (
   [Parameter(Mandatory = $true,
     ValueFromPipeline = $true,
     HelpMessage = 'Lowercase, alphabetic name of post')]
-  [ValidatePattern('^[a-z\-]+$')]
+  [ValidatePattern('^[a-z][a-z0-9\-]+$')]
   [string]$PostName,
   [string]$GitHubBlobRoot = "https://raw.githubusercontent.com/KaiWalter/automate-posts/main/"
 )

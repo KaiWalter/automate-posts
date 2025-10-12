@@ -1,0 +1,10 @@
+{
+  "title": "Challenging n8n AI Agent with a personal productivity flow",
+  "description": "Agentic personal productivity flows with peace of mind using n8n.",
+  "tags": "n8n, agent, productivity",
+  "published": true,
+  "content": "posts/testing-n8n-ai-agent.md",
+  "banner100x42": "images/2025-10-n8n-flow-execution.jpg",
+  "replacements": {},
+  "devOnly": false
+}
