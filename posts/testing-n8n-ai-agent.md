@@ -85,9 +85,9 @@ MUST: In any circumstance conclude by sending a summary email.
 - also I added a code node to provide a list of relevant person names, which the agent can use to spell names correctly in the transcription (yeah you get that with German names in an english recording)
 - for a start I did not make use of agent memory as each individual flow is rather ephemeral at the moment
 
-### Switching to Mistal API 🇪🇺
+### Switching to Mistral API 🇪🇺
 
-For the agent I switched from OpenAI to Mistal API, as I wanted to try that out. With `mistral-medium-latest` I was able to produce reliable results.
+For the agent I switched from OpenAI to Mistral API, as I wanted to try that out. With `mistral-medium-latest` I was able to produce reliable results.
 
 There is no Mistral node for speech to text in n8n yet, but I was able to use the HTTP request node to call the API. Nice thing in n8n is, that HTTP request node has a notion of the many credentials n8n supports, so I could use my existing Mistral credentials without the need to figure out authentication headers and so on.
 
