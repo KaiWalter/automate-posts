@@ -1,129 +1,86 @@
-# My Agent Journey: Building AI as an Operating Layer, Not a Chatbot
+## Motivation
 
-For the last year, I stopped thinking about AI as "a better prompt box" and started treating it like an operating layer in my daily system.
+After months of prompting and observing, evaluating how or whether pieces were falling into place - or not - I had the urge to just **write**. Old school: in Neovim, backed by my seasoned "posting harness", Spotify on some Deep House track --- my posting zen mode.
 
-This post is the technical version of that journey: how I built a voice-to-action pipeline, where durable context lives, how routing/delegation works, where deterministic tooling is mandatory, and where human approvals still matter.
+8 months ago I posted the last time in this forum on a [n8n based agentic flow](https://dev.to/kaiwalter/challenging-n8n-ai-agent-with-a-personal-productivity-flow-2a17). Actually exactly on year ago I posted on using [Dapr Agents for my "agentic" scenario](https://dev.to/kaiwalter/dipping-into-dapr-agentic-workflows-fbi). Up to that point I had to produce technical artifacts on my own, of course from 2022 on with AI coding assistance. Then February the OpenClaw wave also hit me. It consumed all my energy I usually spent on exploring various software engineering topics. The speed in which capabilities unfolded for me seemed to have left no bandwidth for me to stop, breathe and exhale.
 
-## Architecture Goal
+Here we are.
 
-I wanted one behavior:
+## February to April : OpenClaw
 
-- capture thoughts quickly from my phone
-- classify intent reliably
-- route work to specialized agents/tools
-- keep memory durable across sessions
-- enforce deterministic guardrails around risky operations
+With Dapr Agents and then n8n I was able to achieve my basic requirement:
 
-The core shift was this: model calls became only one stage in a larger system, not the system itself.
+> I am out, mostly in the mornings for a walk or run, and I just want to drop a thought or a task immediately. Sometimes even complete sections of an upcoming presentation. Or rushing between meeting, the same: Just drop a voice recording and have it turned into a task or just as a note into my email inbox.
 
-## 1) Capture Pipeline: Voice In, Structured Work Out
+Still a bit clunky as I had to rely on _Easy Voice Recorder Pro_ and _Microsoft OneDrive_ in combination to handle the recording and transfer into the inbox of those agents. The experience had been OK-ish, still made me think twice before really recording something as I often had to jump start infrastructure when returning to the console.
 
-My capture loop starts with mobile voice notes and ends as structured task/email/note actions.
+Hooking up _OpenClaw_ to a _Telegram_ bot instantly brought me the desired boost: control an entity with voice from my phone wherever I am, even getting responses as voice messages so I could listen to whatever I was elaborating on.
 
-High-level flow:
+I did not need all the fancy stuff people were exploring with _OpenClaw_ or later _Hermes_ - like computer control. Hence I tuned down _OpenClaw_ to "just" being able to ...
 
-1. Audio arrives in a watched storage location.
-2. A deterministic worker validates file type and naming.
-3. Audio is transcribed.
-4. The transcript is normalized into a canonical event payload.
-5. An intent router sends the event to an orchestrator.
-6. The orchestrator delegates to specialized agents and tools.
+- log (voice) notes to a set of agent curated project and framework documentsA
+- capture relevant quotes or whole sections from social media content (video & audio)
+- synthesize on those documents - with or without mixing in searchable content from the internet
+- transfer synthesized or original content to my office environment for further processing at my desk
+- create tasks or reminders in my office environment
+- give me details on my calendar - office and private
 
-The important implementation detail is that steps 1, 2, 4, and delivery fan-out are deterministic and idempotent. Only intent interpretation and some planning are model-driven.
+With that the first time I got a **perceivable value from AI**: the capability to unload from and load myself with relevant content, almost like a _Harry Potter Pensieve_. 
 
-## 2) Durable Context and Memory
+Some of the learnings and key success factors (for me) in that phase:
 
-The second brain pattern only works if memory survives restarts and refactors.
+### YOLO - not for me
 
-I split memory into explicit stores:
+What made the _OpenClaw_ experience superior to previous agentic approaches? I was able to add capabilities to the environment on the fly - with natural language, voice!
 
-- **event log** for immutable input/output history
-- **working state** for workflow progress and retries
-- **agent memory** for short/medium-term reasoning context
-- **reference context** for people, projects, naming, and conventions
+I did not lean into YOLO hype, kept the environment within the boundaries I felt necessary. I was carefully listening what was going on in the space, was integrating what seemed to offer value and discarding quickly what did not stick.
 
-Design rules that reduced pain:
+### NixOS and coding agents - a match made in heaven
 
-- no hidden memory in prompts
-- no mutable state only in process RAM
-- every critical decision leaves evidence in logs/state
-- state boundaries are explicit per component
+Having a [declarative operating system environment](https://nixos.org/) available for the agent almost seemed like a natural choice: any OS capability and auxiliary binary the system was lacking could be resolved and transparently added by the agent. However I did not handover the reins immediately. I had _OpenClaw_ on a dedicated system with a dedicated limited user. Within that user the agent was able to adapt the system configuration in a designated worktree and switch into it on my explicit request (elevation/approval). At anytime I was able to pull the plug, revert to a previous configuration and only PR stable system configurations into the main worktree.
 
-This made debugging far easier: when an agent took a wrong turn, I could inspect state transitions instead of guessing from final text.
+Over time I was also moving the startup configuration of _OpenClaw_ into the _NixOS_ configuration. Separating data and control plane helped achieving clean rollbacks after disastrous experiments.
 
-## 3) Agent Routing and Delegation Model
+### Multi-modal messaging
 
-I ended up with a simple but effective routing model:
+Voice in and voice out. For me the essence when preparing or strategizing or just unloading. Additionally I got used to taking pictures from flipcharts or whiteboards with _Telegram_ and handing of to the agent for meeting notes or concept documents. Both media processing capabilities helped reducing mental load - not needing to think about that I still need to process a note or an image. Often I accompanied such a media capture with creating a to do item I most certainly would not miss. Or having the content transferred to my inbox so I could turn it into a proper email.
 
-- **orchestrator**: owns plan, sequencing, and completion criteria
-- **planner/extractor agent**: turns transcripts into actionable structure
-- **execution agents**: perform office automation or downstream actions
-- **deterministic tools**: enforce schema, side effects, and integration contracts
+> In the _OpenClaw_ setup I relied on `gogcli` and _Google Mail_, however switched to [AgentMail](https://www.agentmail.to/) with _Pi Agent_ for a more agent-like experience.
 
-The orchestrator does not directly do everything. It delegates and waits for typed results.
+### Taming The Beast(s)
 
-That separation gave me two wins:
+Over time it turned out that _OpenClaw_ (I also evaluated _Hermes_ for that) is too heavy for my rather closed use case, which by then I narrowed down to
 
-1. I can replace a tool or agent without redesigning the whole flow.
-2. I can test most failure modes without calling an LLM at all.
+1. A Second Brain
+2. An Executive Assistant
+3. A Coding Agent for on-the-spot / disposable Software
 
-## 4) Deterministic Tooling and Guardrails
+Which led me to ...
 
-The reliability jump came from aggressively moving mechanics into deterministic tooling.
+## May to now : Pi Agent
 
-Guardrails I enforce:
+I loved the minimalistic approach of [Pi](https://pi.dev/) immediately, once I stumbled over it. I started with one default agent, connected to _Telegram_ and had the same basic experience as with _OpenClaw_. This thing by default is crazier than its downstream peer: when I was sending in a voice message (indeed as message #3), it was detecting that it lacked the capability to process audio messages and went off bringing this capability to life.
 
-- schema validation on tool inputs/outputs
-- idempotency keys for side-effecting calls
-- retries with bounded backoff on transient failures
-- explicit no-op paths when intent confidence is low
-- immutable audit events for "what happened" reconstruction
+> I let the agent extract all audio capabilities in this [fork of the generally available pi-telegram extension](https://github.com/KaiWalter/pi-telegram-with-audio)
 
-Example pattern:
+### Engineering Agents and Officer Agents
 
-```text
-model decides -> tool call proposal -> schema validation -> policy check -> execute or reject
-```
+_Pi_ primarily is a coding agent, highly suitable for software engineering tasks. For other agent types, `SYSTEM.md` can be used to strip away the engineering genes and make the agent whatever the primary purpose should be. I call this class of agents "Officer Agents". In my environment I currently have the know-it-all **Chief of Staff** and still the time-and-task-management-purposed **Executive Assistant**. Engineering class agents on the other hand are extended with `APPEND_SYSTEM.md` for any target environment specifics I need the agents to understand.
 
-This is where "AI operating layer" becomes real engineering: policy and contracts live outside the model.
+As _OpenClaw_ also _Pi Agent_ understands `SKILL.md` skill files and scripts. For my observation the 2 system prompt artifacts can be kept very small which makes it rather efficient and tuned for the job.
 
-## 5) Human Approvals: Where I Keep the Brake Pedal
+Over time this allowed me to really fine tune those agents and in regular operation use small models like `gpt-5.6-luna` or `gpt-5.3-codex`, only bumping up to heavier models for more complex tasks. 
 
-I do not auto-execute everything.
+### Terminal Multiplexer
 
-I require human approval for:
+While I was running _OpenClaw_ as daemon service on a headless machine (now with more experience and confidence under the belt) I wanted _Pi Agent_ to operate on a full Linux desktop (NixOS of course!). Additionally I wanted to be able to observe and intervene in agent operations on the desktop instantly. Being a seasoned _tmux_ I let my agent configure its own startup into that environment. That was working OK.
 
-- cross-system writes with high blast radius
-- externally visible communications in uncertain contexts
-- architecture-impacting configuration changes
+As demand for more precise agentic terminal control grew, I migrated to [herdr](https://herdr.dev/). 
 
-For low-risk personal productivity actions (for example drafting a reminder email to myself), I allow straight-through execution.
+![A current overview of herdr workspaces and agents](../images/2026-08-17-my-agent.jpg)
 
-That selective approval model preserves velocity while keeping risk bounded.
+Although my agents bounce regular tasks at each other using [Dapr pub/sub](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/) from time to time it is required for one agent (especially my Diagnostic Engineer) to take hard control over another agent's pane. Here _Herdr_ offers a clean CLI and makes those type of operations more reliable than just "terminal keypressing".
 
-## 6) Operational Outcomes
+### Messaging
 
-What improved after moving from chatbot thinking to operating-layer thinking:
-
-- fewer brittle prompt-only failures
-- faster recovery from partial outages
-- cleaner observability and postmortems
-- easier extension to new intents/tools
-- better trust in automation for daily use
-
-Most importantly, I can evolve each layer independently: capture, orchestration, memory, tooling, and policy.
-
-## What I’d Recommend If You Build Something Similar
-
-Start with this split from day one:
-
-- deterministic mechanics (file handling, validation, routing, retries)
-- model judgment (intent extraction, ambiguous interpretation)
-
-Then make every boundary explicit: contracts, schema, logs, and approval points.
-
-If you do that, your "agent" will feel less like a demo chatbot and more like a maintainable system component.
-
----
-
-I’m continuing to evolve this stack with stronger tool contracts, better state hygiene, and richer observability. If you are building a similar local-first productivity pipeline, I’d love to compare design patterns and failure modes.
+Since spring I was mainly relying on _Telegram_ for message in- and outbound to and from my agents. I kept the bot channels with a 1d deletion window, so that my agent messages would not be kept on the platform for eternity. Considering the growing sensitivity of information I want to process with my agents in the future, I decided to move to a self-hosted and secured [Matrix](https://matrix.org/) infrastructure with a modified _Element X_ build on my phone and a [Matrix to Pi bridge](https://github.com/KaiWalter/pi-matrix-transport). Again the coding agent helps here to tailor and secure the stack to my needs - an effort I would not been able to move into just a few months back. 
