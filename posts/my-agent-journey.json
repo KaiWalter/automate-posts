@@ -1,0 +1,10 @@
+{
+  "title": "My Agent Journey: Building AI as an Operating Layer, Not a Chatbot",
+  "description": "A technical walkthrough of capture pipelines, durable memory, agent delegation, deterministic guardrails, and human approval boundaries.",
+  "tags": "ai, agent, architecture, productivity",
+  "published": false,
+  "content": "posts/my-agent-journey.md",
+  "banner100x42": "images/2026-08-17-my-agent.jpq",
+  "replacements": {},
+  "devOnly": true
+}
