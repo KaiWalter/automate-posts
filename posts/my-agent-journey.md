@@ -18,7 +18,7 @@ Hooking up _OpenClaw_ to a _Telegram_ bot instantly brought me the desired boost
 
 I did not need all the fancy stuff people were exploring with _OpenClaw_ or later _Hermes_ - like computer control. Hence I tuned down _OpenClaw_ to "just" being able to ...
 
-- log (voice) notes to a set of agent curated project and framework documentsA
+- log (voice) notes to a set of agent curated project and framework documents
 - capture relevant quotes or whole sections from social media content (video & audio)
 - synthesize on those documents - with or without mixing in searchable content from the internet
 - transfer synthesized or original content to my office environment for further processing at my desk
@@ -34,6 +34,10 @@ Some of the learnings and key success factors (for me) in that phase:
 What made the _OpenClaw_ experience superior to previous agentic approaches? I was able to add capabilities to the environment on the fly - with natural language, voice!
 
 I did not lean into YOLO hype, kept the environment within the boundaries I felt necessary. I was carefully listening what was going on in the space, was integrating what seemed to offer value and discarding quickly what did not stick.
+
+To play safe I started running _OpenClaw_ in a _docker_ instance, added and tunneled through a _squid_ proxy in a paired network isolated container with `docker-compose` to have control of the outbound connections of the agent. I stuck to that approach for the first 3-4 weeks to gain confidence on how to shape system prompts (and there are many in _OpenClaw_) and skills + tools in a way, so that the agent truly stays on the path I needed to have for my agent.
+
+After that period I brought the set of agents into a set of `systemd` controlled services. Those services I operated in a restricted `openclaw` user context to avoid out-of-bounds system manipulation.
 
 ### NixOS and coding agents - a match made in heaven
 
