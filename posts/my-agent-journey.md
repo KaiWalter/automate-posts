@@ -87,4 +87,10 @@ Although my agents bounce regular tasks at each other using [Dapr pub/sub](https
 
 ### Messaging
 
-Since spring I was mainly relying on _Telegram_ for message in- and outbound to and from my agents. I kept the bot channels with a 1d deletion window, so that my agent messages would not be kept on the platform for eternity. Considering the growing sensitivity of information I want to process with my agents in the future, I decided to move to a self-hosted and secured [Matrix](https://matrix.org/) infrastructure with a modified _Element X_ build on my phone and a [Matrix to Pi bridge](https://github.com/KaiWalter/pi-matrix-transport). Again the coding agent helps here to tailor and secure the stack to my needs - an effort I would not been able to move into just a few months back. 
+Since spring I was mainly relying on _Telegram_ for message in- and outbound to and from my agents. I kept the bot channels with a 1d deletion window, so that my agent messages would not be kept on the platform for eternity. Considering the growing sensitivity of information I want to process with my agents in the future, I decided to move to a self-hosted and secured [Matrix](https://matrix.org/) infrastructure with a modified _Element X_ build on my phone and a [Matrix to Pi bridge](https://github.com/KaiWalter/pi-matrix-transport). Again the coding agent helps here to tailor and secure the stack to my needs - an effort I would not been able to move into just a few months back.
+
+### Geeking Out
+
+Using _Telegram_ or _Matrix_ is fine when stationary. Especially when being on the go I wanted to have a simpler voice-only interface with a Record and a Play button. I love these times. I just connected the phone with USB, followed the instructions provided by the coding agent to enable USB deployment and let the coding agent do its magic:
+
+![My agents available in a Star Trek LCARS style communicator app](../images/Screenshot_20260820_075819_Duotronic.jpg)
