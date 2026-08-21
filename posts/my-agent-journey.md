@@ -75,6 +75,19 @@ As _OpenClaw_ also _Pi Agent_ understands `SKILL.md` skill files and scripts. Fo
 
 Over time this allowed me to really fine tune those agents and in regular operation use small models like `gpt-5.6-luna` or `gpt-5.3-codex`, only bumping up to heavier models for more complex tasks. 
 
+### Personalities / Agent Roles
+
+With _OpenClaw_ I leaned into the concept of `SOUL.md` and enjoyed the flippant and playful comments in the responses for a while. Crossing over to _Pi Agent_ I dropped most of it and worked with these agent roles and characters:
+
+| code | name (OpenClaw soul) | role | capabilities |
+| ---- | ---- | ---- | ---- |
+| XO | R2-D2 | Executive Officer /</br>Chief of Staff | second brain / knowledge base,</br>planning and orchestrating multi-agent goal-based work,</br>has sub agent for research |
+| XA | C-3PO | Executive Assistant | managing calendar and tasks |
+| CE | Chewie | Chief Engineer | managing host and agent environment,</br>on-the-spot software generation,</br>has sub agents for research, repository scouting, cloud and experimental engineering |
+| DE | BB-8 | Diagnostic Engineer | problem debugging and error reporting,</br>fallback engineer |
+| RO | Robbie | Family Assistant | manages family calendar,</br>waste pick up schedule,</br>shopping list (is connected over Discord) |
+
+
 ### Terminal Multiplexer
 
 While I was running _OpenClaw_ as daemon service on a headless machine (now with more experience and confidence under the belt) I wanted _Pi Agent_ to operate on a full Linux desktop (NixOS of course!). Additionally I wanted to be able to observe and intervene in agent operations on the desktop instantly. Being a seasoned _tmux_ I let my agent configure its own startup into that environment. That was working OK.
