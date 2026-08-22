@@ -56,7 +56,7 @@ Voice in and voice out. For me the essence when preparing or strategizing or jus
 Over time it turned out that _OpenClaw_ (I also evaluated _Hermes_ for that) is too heavy for my rather closed use case, which by then I narrowed down to
 
 1. A Second Brain
-2. An Executive Assistant
+2. An administrative agent
 3. A Coding Agent for on-the-spot / disposable Software
 
 Which led me to ...
@@ -69,7 +69,7 @@ I loved the minimalistic approach of [Pi](https://pi.dev/) immediately, once I s
 
 ### Engineering Agents and Officer Agents
 
-_Pi_ primarily is a coding agent, highly suitable for software engineering tasks. For other agent types, `SYSTEM.md` can be used to strip away the engineering genes and make the agent whatever the primary purpose should be. I call this class of agents "Officer Agents". In my environment I currently have the know-it-all **Chief of Staff** and still the time-and-task-management-purposed **Executive Assistant**. Engineering class agents on the other hand are extended with `APPEND_SYSTEM.md` for any target environment specifics I need the agents to understand.
+_Pi_ primarily is a coding agent, highly suitable for software engineering tasks. For other agent types, `SYSTEM.md` can be used to strip away the engineering genes and make the agent whatever the primary purpose should be. I call this class of agents "Officer Agents". In my environment I currently have the know-it-all **orchestration agent** and still the time-and-task-management-purposed **administrative agent**. Engineering class agents on the other hand are extended with `APPEND_SYSTEM.md` for any target environment specifics I need the agents to understand.
 
 As _OpenClaw_ also _Pi Agent_ understands `SKILL.md` skill files and scripts. For my observation the 2 system prompt artifacts can be kept very small which makes it rather efficient and tuned for the job.
 
@@ -81,10 +81,10 @@ With _OpenClaw_ I leaned into the concept of `SOUL.md` and enjoyed the flippant 
 
 | code | name (OpenClaw soul) | role | capabilities |
 | ---- | ---- | ---- | ---- |
-| XO | R2-D2 | Executive Officer /</br>Chief of Staff | second brain / knowledge base,</br>planning and orchestrating multi-agent goal-based work,</br>has sub agent for research |
-| XA | C-3PO | Executive Assistant | managing calendar and tasks |
-| CE | Chewie | Chief Engineer | managing host and agent environment,</br>on-the-spot software generation,</br>has sub agents for research, repository scouting, cloud and experimental engineering |
-| DE | BB-8 | Diagnostic Engineer | problem debugging and error reporting,</br>fallback engineer |
+| Agent A | orchestration | planning agent | second brain / knowledge base,</br>planning and orchestrating multi-agent goal-based work,</br>has sub agent for research |
+| Agent B | administration | administrative agent | managing calendar and tasks |
+| Agent C | engineering | engineering agent | managing host and agent environment,</br>on-the-spot software generation,</br>has sub agents for research, repository scouting, cloud and experimental engineering |
+| Agent D | diagnostics | diagnostic agent | problem debugging and error reporting,</br>fallback engineer |
 | RO | Robbie | Family Assistant | manages family calendar,</br>waste pick up schedule,</br>shopping list (is connected over Discord) |
 
 
@@ -96,7 +96,7 @@ As demand for more precise agentic terminal control grew, I migrated to [herdr](
 
 ![A current overview of herdr workspaces and agents](../images/2026-08-17-my-agent.jpg)
 
-Although my agents bounce regular tasks at each other using [Dapr pub/sub](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/) from time to time it is required for one agent (especially my Diagnostic Engineer) to take hard control over another agent's pane. Here _Herdr_ offers a clean CLI and makes those type of operations more reliable than just "terminal keypressing".
+Although my agents bounce regular tasks at each other using [Dapr pub/sub](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/) from time to time it is required for one agent (especially my diagnostic agent) to take hard control over another agent's pane. Here _Herdr_ offers a clean CLI and makes those type of operations more reliable than just "terminal keypressing".
 
 ### Messaging
 
