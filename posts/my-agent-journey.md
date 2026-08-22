@@ -51,6 +51,12 @@ Voice in and voice out. For me the essence when preparing or strategizing or jus
 
 > In the _OpenClaw_ setup I relied on `gogcli` and _Google Mail_, however switched to [AgentMail](https://www.agentmail.to/) with _Pi Agent_ for a more agent-like experience.
 
+### A note on memory
+
+When starting with _OpenClaw_ I operated various available patterns and extensions to deal with memory and keep the agents learning (from positive and negative "experiences"). That worked for me to some degree to synthesize learnings from sessions over daily memory to **lessons learned**. Those where the times of _QMD_, which is now replaced with internal memory.
+
+However, I struggled with getting the agents to "the rights things" to learn. After a while I dropped built-in memory patterns and relied more on explicitly forming my intent and desired behaviors into agent instructions `AGENTS.md`, `SOUL.md`, `USER.md` and `MEMORY.md` (from that file resolving into concepts, projects, frameworks, glossary and other types of purpose-bound memory),  as well as explicit skills for the major operations. Additions to those purpose-bound memory files were only made on my explicit request.
+
 ### Taming The Beast(s)
 
 Over time it turned out that _OpenClaw_ (I also evaluated _Hermes_ for that) is too heavy for my rather closed use case, which by then I narrowed down to
@@ -97,6 +103,15 @@ As demand for more precise agentic terminal control grew, I migrated to [herdr](
 ![A current overview of herdr workspaces and agents](../images/2026-08-17-my-agent.jpg)
 
 Although my agents bounce regular tasks at each other using [Dapr pub/sub](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/) from time to time it is required for one agent (especially my Diagnostic Engineer) to take hard control over another agent's pane. Here _Herdr_ offers a clean CLI and makes those type of operations more reliable than just "terminal keypressing".
+
+### Memory
+
+On _Pi_ I moved from the loosely structured arrangement of `.md` files to [Open Knowledge](https://openknowledge.ai/) which provides
+
+1. a CLI for the agents to operate with the knowledge base
+2. a WebUI for me to work with the knowledge base without causing conflicts with the agent's contributions
+
+I established some rules on how to treat various types of content. Raw or original content provided by me would only be added on my explicit request and is marked as such - not to be overwritten by any of the agents' processes. Content synthesized from original content or from the web does not have that level of protection. Here agents (mainly Chief of Staff in a Second Brain capacity) would update based on further synthesis or new insights. From time to time on certain concepts or projects I let the agent clean out the synthesized information and restart that process.
 
 ### Messaging
 
